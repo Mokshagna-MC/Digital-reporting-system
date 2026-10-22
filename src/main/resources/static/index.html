@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Digital Reporting System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- Header / Topbar (Clean Editorial Aesthetic) -->
+<header class="topbar">
+  <div class="brandGroup">
+    <div>
+      <div class="brand">DIGITAL REPORTING SYSTEM</div>
+      <div class="subbrand">Confidential Incident Registry &middot; Cryptographic Keyphrase Access</div>
+    </div>
+  </div>
+  <div class="topbarActions">
+    <button id="btnTrackCaseNav" class="secondary smallBtn" type="button" title="Track or resume an existing case with Secret Keyphrase">
+      Track Case
+    </button>
+    <button id="btnAuthorityLoginNav" class="secondary smallBtn" type="button" title="Police, Investigators, and Administrative Officials Portal">
+      Authority Portal
+    </button>
+    <button id="themeToggleBtn" class="themeToggleBtn" type="button" title="Toggle Light / Dark Mode">
+      <span id="themeToggleIcon">🌙</span> <span id="themeToggleText">Dark Mode</span>
+    </button>
+    <div id="userArea"></div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- RESUMED SESSION ALERT BANNER -->
+  <div id="resumedSessionBanner" class="resumedSessionBanner hidden">
+    <div class="resumedSessionContent">
+      <span class="pulseDot"></span>
+      <div>
+        <strong>Active Case Session: <span id="bannerCaseCode" style="font-family: var(--font-mono); color: var(--sand-gold);">RPT-2026-XXXXX</span></strong>
+        <p id="bannerCaseSummary">Resumed your confidential reporting session. You can amend details or communicate with investigating authorities.</p>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <button type="button" class="primary smallBtn" id="bannerOpenCaseBtn">Open Case &amp; Inquiries</button>
+      <button type="button" class="secondary smallBtn" id="bannerDismissBtn">&times; Dismiss</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP PANEL -->
+  <section id="appPanel">
+    <!-- Hero / Introduction Section (Restrained Editorial Asymmetry) -->
+    <div class="heroHeader">
+      <div>
+        <span class="slideNumberBadge">Public Evidentiary Ledger</span>
+        <h1 id="welcomeTitle">Confidential Incident &amp; Evidentiary Reporting</h1>
+        <p id="roleText" class="muted">A zero-knowledge digital registry preserving witness testimonies, chain-of-custody checksums, and two-way confidential communications with authorities.</p>
+      </div>
+      <div id="headerActionsArea">
+        <button id="logoutBtn" class="secondary logoutBtn hidden">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- Navigation Bar (Editorial Tabs) -->
+    <nav class="navBar">
+      <button class="navBtn active" data-view="reports">Incident Directory</button>
+      <button class="navBtn" data-view="lodge">Lodge Incident (Anonymous)</button>
+      <button class="navBtn" data-view="track">Track with Keyphrase</button>
+      <button class="navBtn" data-view="contribute">Proximity &amp; Witness Matching</button>
+      <button class="navBtn hidden" id="navCredentials" data-view="credentials">Official Credentials</button>
+      <button class="navBtn hidden" id="navOfficials" data-view="officials">Officials Registry</button>
+      <button class="navBtn hidden" id="navAdminWindow" data-view="adminWindow">Admin Window</button>
+      <button class="navBtn hidden" id="navAuditLogs" data-view="auditLogs">Audit Trail</button>
+    </nav>
+
+    <!-- Key Metrics Stats Grid (Real-time public case counts with dynamic progress bars) -->
+    <div class="statsGrid" id="mainStatsBar">
+      <div class="statCard statFilterBtn active" data-status="ALL" title="Click to view all incident cases">
+        <div class="statTop">
+          <span class="statLabel">Total Cases</span>
+          <span class="slideNumberBadge">01</span>
+        </div>
+        <div class="statValue" id="totalCount">0</div>
+        <div class="dualProgressBar"><div class="progressFill" id="barTotal" style="width: 100%;"></div></div>
+      </div>
+      <div class="statCard statFilterBtn" data-status="PENDING" title="Click to filter Pending Initial Review">
+        <div class="statTop">
+          <span class="statLabel">Pending Review</span>
+          <span class="slideNumberBadge">02</span>
+        </div>
+        <div class="statValue" id="pendingCount">0</div>
+        <div class="dualProgressBar"><div class="progressFill" id="barPending" style="width: 0%;"></div></div>
+      </div>
+      <div class="statCard statFilterBtn" data-status="INVESTIGATING" title="Click to filter Active Investigations">
+        <div class="statTop">
+          <span class="statLabel">Active Investigations</span>
+          <span class="slideNumberBadge">03</span>
+        </div>
+        <div class="statValue" id="investigatingCount">0</div>
+        <div class="dualProgressBar"><div class="progressFill" id="barInvestigating" style="width: 0%;"></div></div>
+      </div>
+      <div class="statCard statFilterBtn" data-status="RESOLVED" title="Click to filter Resolved / Closed Cases">
+        <div class="statTop">
+          <span class="statLabel">Resolved / Closed</span>
+          <span class="slideNumberBadge">04</span>
+        </div>
+        <div class="statValue" id="resolvedCount">0</div>
+        <div class="dualProgressBar"><div class="progressFill" id="barResolved" style="width: 0%;"></div></div>
+      </div>
+    </div>
+
+    <!-- Filter Indicator Bar -->
+    <div id="filterIndicatorBar" class="filterIndicatorBar hidden">
+      <span>Filtered by Status: <strong id="filterIndicatorText">All Incident Cases</strong></span>
+      <button type="button" id="clearFilterBtn" class="secondary smallBtn">&times; Show All Cases</button>
+    </div>
+
+    <!-- ==========================================
+         VIEW 1: LODGE INCIDENT FORM (ANONYMOUS / ZERO USER DATA)
+         ========================================== -->
+    <div id="viewLodge" class="viewSection hidden">
+      <section id="newLodgePanel" class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Lodge Report</span>
+            <h2>Record an Incident Report</h2>
+            <p class="muted">No personal data required. Set a Secret Keyphrase to maintain exclusive ownership, amend details, and communicate with investigating authorities.</p>
+          </div>
+        </div>
+
+        <!-- Zero Personal Data Protection Notice -->
+        <div class="zeroDataNotice">
+          <span style="font-size: 20px;">&sect;</span>
+          <div>
+            <strong>Confidential Zero-Knowledge Submission</strong>
+            <p>No user data, registration, name, email, or telephone number is collected. You will use a <strong>Secret Keyphrase</strong> as your private cryptographic key to access your case, amend details, and communicate back and forth with authorities anytime.</p>
+          </div>
+        </div>
+
+        <!-- Reporter Identity Indicator -->
+        <div id="reporterIdentityBanner" class="reporterIdentityBanner">
+          <div class="identityInfo">
+            <span class="identityIcon" id="reporterRoleIcon">&bull;</span>
+            <div>
+              <strong id="reporterIdentityTitle">Filing Report as: Anonymous Citizen</strong>
+              <div class="muted" id="reporterIdentitySubtitle" style="font-size: 12px;">Zero personal data collected &middot; Keyphrase access enabled</div>
+            </div>
+          </div>
+          <span class="badgeTag" id="reporterBadgeTag">ANONYMOUS</span>
+        </div>
+
+        <form id="reportForm" class="form grid">
+          <label>
+            <span>Incident Category <span style="color: #992828;">*</span></span>
+            <select name="eventType" required>
+              <option value="">Choose a category</option>
+              <option>Theft</option>
+              <option>Fraud / Cybercrime</option>
+              <option>Harassment</option>
+              <option>Assault</option>
+              <option>Missing person</option>
+              <option>Traffic incident</option>
+              <option>Public safety</option>
+              <option>Other</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Date &amp; Time of Incident <span style="color: #992828;">*</span></span>
+            <input name="dateTime" id="reportDateTimeInput" type="datetime-local" required>
+            <span id="dateTimeFeedback" class="muted" style="font-size: 11px;">Must not be set to a future hour.</span>
+          </label>
+
+          <label class="full">
+            <span>Location / Street / Landmark <span style="color: #992828;">*</span></span>
+            <div class="inputWithAction">
+              <input name="loc" id="reportLocInput" maxlength="500" placeholder="Street, junction, landmark, city" required>
+              <button type="button" id="detectLocBtn" class="secondary actionBtn">Detect GPS</button>
+            </div>
+          </label>
+
+          <div class="coordRow full">
+            <label>
+              <span>Latitude (Optional)</span>
+              <input name="latitude" id="reportLatInput" type="number" step="any" placeholder="Auto-filled via GPS">
+            </label>
+            <label>
+              <span>Longitude (Optional)</span>
+              <input name="longitude" id="reportLngInput" type="number" step="any" placeholder="Auto-filled via GPS">
+            </label>
+          </div>
+
+          <!-- Secret Keyphrase Field -->
+          <label class="full" style="background: var(--sand-soft); border: 1px solid var(--sand-border); border-radius: var(--radius-md); padding: 14px 18px; margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-weight: 700; color: var(--navy-deep); font-size: 13.5px;">Secret Keyphrase / Case Access Code <span style="color: #992828;">*</span></span>
+              <button type="button" class="secondary smallBtn" id="generateKeyphraseBtn">Generate Keyphrase</button>
+            </div>
+            <div class="inputWithAction">
+              <input name="keyphrase" id="reportKeyphraseInput" required placeholder="e.g. amber-falcon-842 or choose a secret phrase of your choice" autocomplete="off" style="font-family: var(--font-mono); font-weight: 600;">
+              <button type="button" class="secondary togglePasswordBtn" data-target="reportKeyphraseInput" title="Toggle visibility">Show</button>
+            </div>
+            <span class="muted" style="font-size: 11.5px; display: block; margin-top: 4px;">
+              Save this phrase. You will use it with your Reference Code to track this report, amend statements, and communicate with investigating officials.
+            </span>
+          </label>
+
+          <!-- Scene Photograph Upload -->
+          <div class="full">
+            <label>
+              <span>Scene Photograph / Visual Evidence (Optional)</span>
+              <div id="photoDropZone" class="photoDropZone">
+                <input type="file" id="reportPhotoInput" accept="image/*" style="display: none;">
+                <div id="photoPrompt">
+                  <strong style="color: var(--navy-deep); display: block; font-size: 0.95rem;">Click or Drag to Attach Scene Photograph</strong>
+                  <p class="muted" style="margin: 4px 0 0; font-size: 12px;">Supports JPG, PNG, WEBP (Max 5MB). Computes SHA-256 cryptographic checksum for chain of custody.</p>
+                </div>
+                <div id="photoPreviewContainer" class="hidden" style="margin-top: 10px;">
+                  <img id="photoPreviewImg" src="" alt="Scene Preview" style="max-height: 150px; border-radius: 6px; border: 1px solid var(--sand-border);">
+                  <div style="margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 12px;">
+                    <span id="photoFileName" style="font-weight: 600; font-size: 12.5px; color: var(--navy-deep);"></span>
+                    <button type="button" id="removePhotoBtn" class="danger smallBtn">Remove Photo</button>
+                  </div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- Public Glimpse / Overview -->
+          <label class="full">
+            <span>Public Incident Glimpse (Visible in Directory &amp; to Witnesses) <span style="color: #992828;">*</span></span>
+            <textarea name="incidentOverview" id="reportOverviewInput" rows="2" maxlength="1000" placeholder="Provide a high-level overview so community members and potential witnesses recognize the incident (e.g. Reported store safe burglary near Main Square during morning hours). Do NOT include confidential clues or hidden details." required></textarea>
+            <span class="muted" style="font-size: 11.5px;">This public overview lets witnesses corroborate without copying sensitive specifics.</span>
+          </label>
+
+          <!-- Confidential Detailed Narrative -->
+          <label class="full">
+            <span>Confidential Investigation Narrative (Protected &amp; Masked) <span style="color: #992828;">*</span></span>
+            <textarea name="description" rows="4" maxlength="5000" placeholder="Describe exact sequences of events, specific vehicle makes, suspect clothing, directions of travel, items taken, and confidential forensic specifics." required></textarea>
+            <div class="privacyShield">
+              <div>
+                <strong>Independent Witness Anti-Cheating Protection:</strong><br>
+                This detailed description will be <em>masked from ordinary citizens and other reporters</em>. It is visible only to you (via your Secret Keyphrase) and authorized officials. This prevents prospective witnesses from copying answers to falsely inflate consistency scores.
+              </div>
+            </div>
+          </label>
+
+          <!-- Scene Officials Drawer (Only shown for Police, Journalists, Government Officials, Admins) -->
+          <div id="officialsPresentSection" class="full officialsDrawer hidden">
+            <div class="officialsDrawerHeader">
+              <h4>Scene Officials &amp; Intake Personnel Present (Optional)</h4>
+              <span class="slideNumberBadge">Intake Credentials</span>
+            </div>
+            <p class="muted" style="margin-top: 0; font-size: 12.5px;">Record law enforcement or authorized officials present at the scene during intake.</p>
+            
+            <div class="grid" style="gap: 12px;">
+              <label>
+                <span>Official Full Name</span>
+                <input name="initialOfficialName" placeholder="e.g. Insp. Marcus Vance">
+              </label>
+              <label>
+                <span>Badge / Service Number</span>
+                <input name="initialOfficialBadge" placeholder="e.g. KA-POL-8821">
+              </label>
+              <label>
+                <span>Department / Agency</span>
+                <input name="initialOfficialDept" placeholder="e.g. Metropolitan Police - CID">
+              </label>
+              <label>
+                <span>Designation / Rank</span>
+                <input name="initialOfficialDesignation" placeholder="e.g. Lead Investigating Detective">
+              </label>
+              <label>
+                <span>Contact Info (Phone/Email)</span>
+                <input name="initialOfficialContact" placeholder="e.g. m.vance@police.gov">
+              </label>
+              <label>
+                <span>Arrival / Intake Time</span>
+                <input name="initialOfficialArrival" id="initialOfficialArrivalInput" type="datetime-local">
+              </label>
+              <label class="full" style="flex-direction: row; align-items: center; gap: 8px; margin: 4px 0;">
+                <input type="checkbox" name="initialOfficialFirstTaker" value="true" checked>
+                <span><strong>Designate as First Report Taker</strong> (This official took the initial intake statement)</span>
+              </label>
+              <label class="full">
+                <span>Duties Summary &amp; Scene Actions</span>
+                <textarea name="initialOfficialDuties" rows="2" maxlength="1000" placeholder="e.g. Secured perimeter, coordinated initial evidence recovery, logged scene witnesses."></textarea>
+              </label>
+            </div>
+          </div>
+
+          <!-- Citizen Notice when Officials Drawer is Hidden -->
+          <div id="citizenOfficialNotice" class="full privacyBox hidden">
+            <strong>Citizen Intake:</strong> As an anonymous reporter, investigating officers and scene personnel will be assigned upon review by police and administrative officials.
+          </div>
+
+          <div class="full" style="display:flex; justify-content:flex-end;">
+            <button class="primary submitBtn" type="submit" style="min-width: 220px;">Submit Incident &amp; Get Keyphrase</button>
+          </div>
+        </form>
+        <p id="reportMessage" class="message" role="status" style="margin-top: 14px; font-weight: 600;"></p>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         VIEW 2: TRACK & ACCESS CASE WITH KEYPHRASE
+         ========================================== -->
+    <div id="viewTrack" class="viewSection hidden">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Case Tracker</span>
+            <h2>Track &amp; Access Case with Secret Keyphrase</h2>
+            <p class="muted">Check updates, read inquiries from investigating authorities, and submit supplementary statements without compromising your anonymity.</p>
+          </div>
+        </div>
+
+        <div style="max-width: 580px; margin: 0 auto; padding: 20px 0;">
+          <form id="trackViewForm" class="form">
+            <label>
+              <span>Case Reference Code</span>
+              <input id="trackViewRefCode" required placeholder="e.g. RPT-2026-00001" style="font-family: var(--font-mono); font-size: 15px; text-transform: uppercase;">
+            </label>
+            <label style="margin-top: 14px;">
+              <span>Secret Keyphrase / Access Code</span>
+              <div class="inputWithAction">
+                <input id="trackViewKeyphrase" type="password" required placeholder="Enter the secret keyphrase used when lodging the case" style="font-family: var(--font-mono);">
+                <button type="button" class="secondary togglePasswordBtn" data-target="trackViewKeyphrase">Show</button>
+              </div>
+            </label>
+            <button type="submit" class="primary submitBtn" style="margin-top: 18px; width: 100%;">Unlock Case &amp; Inquiries</button>
+            <p id="trackViewMsg" class="message" role="status" style="margin-top: 12px; font-weight: 600; text-align: center;"></p>
+          </form>
+
+          <!-- Saved Cases in this Browser Card -->
+          <div id="trackSavedCasesCard" class="hidden" style="margin-top: 30px; background: var(--sand-soft); border: 1px solid var(--sand-border); border-radius: var(--radius-md); padding: 18px 20px;">
+            <div style="font-weight: 700; color: var(--navy-deep); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+              <span>Active / Saved Cases in this Browser:</span>
+              <button type="button" class="secondary smallBtn" id="clearSavedCasesBtn">&times; Clear History</button>
+            </div>
+            <div id="trackSavedCasesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         VIEW 3: INCIDENT CASE DIRECTORY (DEFAULT VIEW)
+         ========================================== -->
+    <div id="viewReports" class="viewSection">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Public Directory</span>
+            <h2>Incident Case Directory</h2>
+            <p class="muted">Live cases, public glimpses, witness consistency verification, evidence hashes, and community authenticity indications.</p>
+          </div>
+          <div class="inputWithAction">
+            <select id="statusFilter" aria-label="Filter by status" style="width: 170px;">
+              <option value="">All Statuses</option>
+              <option>PENDING</option>
+              <option>UNDER_REVIEW</option>
+              <option>INVESTIGATING</option>
+              <option>RESOLVED</option>
+              <option>CLOSED</option>
+            </select>
+            <button id="refreshBtn" class="secondary refreshBtn">Refresh</button>
+          </div>
+        </div>
+
+        <div id="reportsList" class="reportsList">
+          <p class="muted">Loading reports&hellip;</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         VIEW 4: COMMUNITY WITNESS & PROXIMITY SEARCH
+         ========================================== -->
+    <div id="viewContribute" class="viewSection hidden">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Witness Matching</span>
+            <h2>Incident Discovery &amp; Witness Matching</h2>
+            <p class="muted">Search cases by reference number, keywords, or GPS proximity. Witnesses view the public glimpse and independently submit observations.</p>
+          </div>
+        </div>
+
+        <div class="inputWithAction" style="margin-bottom: 16px;">
+          <input id="contributeSearchInput" placeholder="Search by Case Ref (e.g. RPT-2026-00001), keywords, location, or area..." style="flex:1;">
+          <button id="contributeSearchBtn" class="primary">Search</button>
+          <button id="findNearbyBtn" class="gold">Find Incidents Near Me</button>
+        </div>
+
+        <div id="nearbyStatusNotice" class="searchNotice" style="font-size: 13px; font-weight: 600; color: var(--navy-deep); margin-bottom: 12px;"></div>
+        <div id="contributeReportsList" class="reportsList">
+          <p class="muted">Enter keywords above or click 'Find Incidents Near Me' to browse nearby cases.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ==========================================
+         VIEW 5: PERSONAL / OFFICIAL CREDENTIALS TAB
+         ========================================== -->
+    <div id="viewCredentials" class="viewSection hidden">
+      <div class="credentialsContainer">
+        <div class="executiveIdCard">
+          <div class="idCardTop">
+            <div class="idCardBrand">Portal Credential</div>
+            <span class="slideNumberBadge" style="background: rgba(194, 162, 104, 0.15); color: var(--sand-gold); border-color: var(--sand-gold);" id="credVerificationBadge">VERIFIED CREDENTIAL</span>
+          </div>
+
+          <div class="avatarCircle" id="credAvatarInitials">U</div>
+          <h2 class="idCardName" id="credFullName">User Full Name</h2>
+          <div class="idCardRole" id="credRoleTag">Role Designation</div>
+
+          <div class="idDetailsGrid">
+            <div class="idDetailItem">
+              <div class="label">Badge / ID Number</div>
+              <div class="value" id="credBadgeValue">&mdash;</div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Department / Outlet</div>
+              <div class="value" id="credDeptValue">&mdash;</div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Official Designation</div>
+              <div class="value" id="credDesignationValue">&mdash;</div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Official Contact</div>
+              <div class="value" id="credContactValue">&mdash;</div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Email Authenticity</div>
+              <div class="value" id="credEmailAuthBadgeContainer">
+                <span id="credEmailAuthBadge" class="emailAuthBadge unverified">Checking...</span>
+              </div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Member Since</div>
+              <div class="value" id="credMemberSince">&mdash;</div>
+            </div>
+            <div class="idDetailItem">
+              <div class="label">Last Authenticated Login</div>
+              <div class="value" id="credLastLoginValue">&mdash;</div>
+            </div>
+            <div class="idDetailItem" style="grid-column: 1 / -1;">
+              <div class="label">Account Standing</div>
+              <div class="value" style="color: #4EAD8A;">ACTIVE &middot; VERIFIED DATABASE</div>
+            </div>
+          </div>
+
+          <div id="credVerifyEmailPrompt" class="hidden" style="margin-top: 14px; padding: 10px 14px; background: rgba(222, 147, 56, 0.12); border: 1px solid var(--color-warning); border-radius: var(--radius-sm); font-size: 12px; display: flex; align-items: center; justify-content: space-between;">
+            <span style="color: var(--color-warning); font-weight: 600;">Email verification pending</span>
+            <button type="button" class="gold smallBtn" id="openVerifyEmailModalBtn">Verify Email Now</button>
+          </div>
+
+          <div style="margin-top: 18px;">
+            <button class="secondary submitBtn" id="editCredentialsBtn" style="width: 100%;">Edit Official Credentials</button>
+          </div>
+        </div>
+
+        <div class="credentialsNotesCard">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Supervisory Standing</span>
+            <h3>Official Accreditation &amp; Jurisdiction Notes</h3>
+            <p class="muted">Official jurisdiction notes, chain-of-command assignments, and supervisory authority.</p>
+          </div>
+          <div id="credNotesDisplay" class="notesBox">No supervisory notes entered yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 6: Officials Registry -->
+    <div id="viewOfficials" class="viewSection hidden">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Scene Personnel</span>
+            <h2>Scene Officials Registry &amp; First Report Takers</h2>
+            <p class="muted">All law enforcement officers, investigators, and first report takers recorded across incident scenes.</p>
+          </div>
+          <div class="inputWithAction">
+            <input id="officialsSearchInput" placeholder="Filter by badge, name, or department..." style="width: 260px;">
+            <button id="refreshOfficialsBtn" class="secondary">Refresh</button>
+          </div>
+        </div>
+        <div id="allOfficialsTableContainer" class="tableWrapper">
+          <p class="muted">Loading officials registry&hellip;</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 7: Admin Window (Live Updates) -->
+    <div id="viewAdminWindow" class="viewSection hidden">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Administrative Operations</span>
+            <h2>Live Operational Overview &amp; Incident Auditing</h2>
+            <p class="muted">Real-time status tracking, FIR assignments, sensitive case view inspections, and scene responder supervision.</p>
+          </div>
+          <button id="refreshAdminBtn" class="secondary">Refresh Feeds</button>
+        </div>
+
+        <div class="adminGrid">
+          <div class="adminCard">
+            <div class="adminCardHeader">
+              <h4>Active Incident Status Tracking</h4>
+              <span class="badgeTag">REAL-TIME</span>
+            </div>
+            <div id="adminReportsFeed" class="feedList">
+              <p class="muted">Loading active cases&hellip;</p>
+            </div>
+          </div>
+          <div class="adminCard">
+            <div class="adminCardHeader">
+              <h4>Recent System-Wide Audit Log Events</h4>
+              <span class="badgeTag">IMMUTABLE</span>
+            </div>
+            <div id="adminAuditFeed" class="feedList">
+              <p class="muted">Loading audit entries&hellip;</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- VIEW 8: System Audit Trail -->
+    <div id="viewAuditLogs" class="viewSection hidden">
+      <section class="panel">
+        <div class="panelHeader">
+          <div class="panelTitleGroup">
+            <span class="slideNumberBadge">Accountability Ledger</span>
+            <h2>System-Wide Accountability &amp; Immutable Audit Trail</h2>
+            <p class="muted">Cryptographic chain-of-custody audit log. Every report creation, status transition, witness filing, evidence attachment, and sensitive case view is permanently recorded.</p>
+          </div>
+          <button id="refreshAuditBtn" class="secondary">Refresh Logs</button>
+        </div>
+        <div id="fullAuditLogsTableContainer" class="tableWrapper">
+          <p class="muted">Loading audit trail&hellip;</p>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       MODALS (Preserving All Form Bindings & IDs)
+       ========================================== -->
+
+  <!-- MODAL: Case Lodged & Keyphrase Credentials -->
+  <div id="keyphraseSuccessModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 600px; text-align: center;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup" style="text-align: center; width: 100%;">
+          <span class="slideNumberBadge">Case Registered</span>
+          <h3 style="font-size: 1.6rem; margin-top: 6px;">Incident Successfully Lodged</h3>
+          <p class="muted">Your incident has been recorded in the digital register with zero personal data collected.</p>
+        </div>
+        <button class="modalClose" data-close="keyphraseSuccessModal">&times;</button>
+      </div>
+
+      <div style="text-align: left; margin: 16px 0;">
+        <label><span>Official Case Reference Code:</span></label>
+        <div class="keyphraseTokenBox">
+          <span id="successRefCodeDisplay">RPT-2026-00000</span>
+          <button type="button" class="secondary smallBtn" id="copyRefCodeBtn">Copy</button>
+        </div>
+
+        <label><span>Your Private Secret Keyphrase:</span></label>
+        <div class="keyphraseTokenBox">
+          <span id="successKeyphraseDisplay">amber-falcon-842</span>
+          <button type="button" class="secondary smallBtn" id="copyKeyphraseBtn">Copy</button>
+        </div>
+
+        <div class="privacyShield" style="margin-top: 14px;">
+          <div>
+            <strong>Important: Keep your Secret Keyphrase Safe</strong><br>
+            Because zero personal data was collected, this keyphrase is the <strong>only way</strong> to access full case files, submit updates, and read inquiries sent by investigating authorities.
+          </div>
+        </div>
+      </div>
+
+      <div class="modalActionRow" style="justify-content: center; gap: 12px; margin-top: 24px;">
+        <button type="button" class="primary" id="openLodgedCaseBtn">Open Case &amp; Inquiries</button>
+        <button type="button" class="secondary" id="saveCredentialsBrowserBtn">Save to This Browser</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Track & Access Case with Keyphrase -->
+  <div id="trackCaseModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 540px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Case Access</span>
+          <h3>Access Case with Secret Keyphrase</h3>
+          <p class="muted">Enter your case reference code and secret keyphrase to unlock full narrative, updates, and authority inquiries.</p>
+        </div>
+        <button class="modalClose" data-close="trackCaseModal">&times;</button>
+      </div>
+
+      <form id="trackCaseForm" class="form" style="margin-top: 14px;">
+        <label>
+          <span>Case Reference Code</span>
+          <input name="referenceCode" id="trackRefCodeInput" required placeholder="e.g. RPT-2026-00001" style="font-family: var(--font-mono); text-transform: uppercase;">
+        </label>
+        <label style="margin-top: 12px;">
+          <span>Secret Keyphrase</span>
+          <div class="inputWithAction">
+            <input name="keyphrase" id="trackKeyphraseInput" type="password" required placeholder="Enter your secret keyphrase" style="font-family: var(--font-mono);">
+            <button type="button" class="secondary togglePasswordBtn" data-target="trackKeyphraseInput">Show</button>
+          </div>
+        </label>
+
+        <p id="trackCaseMsg" class="message" role="status" style="margin-top: 10px; font-weight: 600; text-align: center;"></p>
+
+        <div class="modalActionRow" style="margin-top: 20px;">
+          <button type="button" class="secondary" data-close="trackCaseModal">Cancel</button>
+          <button type="submit" class="primary">Unlock Case &amp; Inquiries</button>
+        </div>
+      </form>
+
+      <!-- Browser Saved Cases List -->
+      <div id="savedCasesBrowserSection" class="hidden" style="margin-top: 24px; padding-top: 18px; border-top: 1px dashed var(--sand-border);">
+        <div style="font-weight: 700; font-size: 13px; color: var(--navy-deep); margin-bottom: 8px;">
+          Saved Cases in this Browser:
+        </div>
+        <div id="savedCasesList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Two-Way Authority Inquiries & Communication -->
+  <div id="authorityMessagesModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 740px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Inquiries Channel</span>
+          <h3 id="chatModalTitle">Authority Inquiries &amp; Responses</h3>
+          <p class="muted" id="chatModalSub">Two-way confidential communication between anonymous reporter and investigating authorities.</p>
+        </div>
+        <button class="modalClose" data-close="authorityMessagesModal">&times;</button>
+      </div>
+
+      <div class="privacyBox" id="chatRoleNotice" style="margin-bottom: 14px;"></div>
+
+      <div id="chatMessagesContainer" class="chatContainer">
+        <div class="chatEmptyState">No messages exchanged yet. Use the message box below to post an inquiry or reply.</div>
+      </div>
+
+      <form id="chatSendForm">
+        <div class="chatInputArea">
+          <textarea id="chatInputText" required placeholder="Type your confidential reply or inquiry here..."></textarea>
+          <button type="submit" class="primary submitBtn" id="chatSendBtn" style="min-width: 130px; height: auto;">Send</button>
+        </div>
+      </form>
+      <p id="chatMsgStatus" class="message" role="status" style="margin-top: 8px; font-weight: 600;"></p>
+    </div>
+  </div>
+
+  <!-- MODAL: Amend / Update Case Details -->
+  <div id="updateReportModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 700px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Case Amendment</span>
+          <h3 id="updateReportModalTitle">Amend Case Details</h3>
+          <p class="muted">Add supplementary observations, amend location, or attach additional photos to your incident report.</p>
+        </div>
+        <button class="modalClose" data-close="updateReportModal">&times;</button>
+      </div>
+
+      <form id="updateReportForm" class="form grid">
+        <input type="hidden" id="updateReportId">
+
+        <label class="full">
+          <span>Location / Scene Landmark <span style="color: #992828;">*</span></span>
+          <input id="updateLocInput" required placeholder="Street, junction, landmark">
+        </label>
+
+        <label class="full">
+          <span>Public Overview / Glimpse <span style="color: #992828;">*</span></span>
+          <textarea id="updateOverviewInput" rows="2" maxlength="1000" placeholder="High-level public overview"></textarea>
+        </label>
+
+        <label class="full">
+          <span>Confidential Detailed Narrative <span style="color: #992828;">*</span></span>
+          <textarea id="updateDescInput" rows="4" maxlength="5000" required placeholder="Detailed investigation narrative"></textarea>
+        </label>
+
+        <div class="full">
+          <label>
+            <span>Attach Supplementary Photograph Evidence (Optional)</span>
+            <input type="file" id="updatePhotoInput" accept="image/*">
+          </label>
+        </div>
+
+        <p id="updateReportMsg" class="message full" role="status" style="margin-top: 6px; font-weight: 600;"></p>
+
+        <div class="full modalActionRow" style="margin-top: 14px;">
+          <button type="button" class="secondary" data-close="updateReportModal">Cancel</button>
+          <button type="submit" class="primary">Save Case Amendments</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Authority & Official Portal Login -->
+  <div id="authorityLoginModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 540px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Official Station</span>
+          <h3>Authority &amp; Investigator Sign In</h3>
+          <p class="muted">Sign in with official credentials (Police Officer, Government Official, Journalist, or Administrator).</p>
+        </div>
+        <button class="modalClose" data-close="authorityLoginModal">&times;</button>
+      </div>
+
+      <form id="loginForm" class="form" style="margin-top: 14px;">
+        <label>
+          <span>Official Username</span>
+          <input name="username" id="authLoginUsername" required autocomplete="username" placeholder="e.g. admin, sgt_reynolds, lead_officer_test">
+        </label>
+        <label style="margin-top: 12px;">
+          <span>Password</span>
+          <div class="inputWithAction">
+            <input name="password" id="authLoginPassword" type="password" required autocomplete="current-password" placeholder="Enter password">
+            <button type="button" class="secondary togglePasswordBtn" data-target="authLoginPassword">Show</button>
+          </div>
+        </label>
+        <button class="primary submitBtn" type="submit" style="margin-top: 16px; width: 100%;">Sign In to Official Station</button>
+
+        <!-- Quick Demo Accounts -->
+        <div style="margin-top: 20px; padding: 14px 16px; background: var(--sand-soft); border: 1px solid var(--sand-border); border-radius: var(--radius-sm); font-size: 12px;">
+          <div style="font-weight: 700; color: var(--navy-deep); margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <span>Demo Accounts:</span>
+            <span class="muted" style="font-size: 11px;">Click to fill</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button type="button" class="secondary smallBtn demoFillBtn" data-user="admin" data-pass="Admin@2026Password!">Admin</button>
+            <button type="button" class="secondary smallBtn demoFillBtn" data-user="sgt_reynolds" data-pass="Secur3Password!">Police</button>
+            <button type="button" class="secondary smallBtn demoFillBtn" data-user="lead_officer_test" data-pass="Secur3Password!">Official</button>
+          </div>
+        </div>
+
+        <p id="authMessage" class="message" role="status" style="margin-top: 14px; text-align: center; font-weight: 600;"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Authenticity Endorsement & Vouching -->
+  <div id="endorsementModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 620px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Community Indication</span>
+          <h3 id="endorseModalTitle">Vouch for Report Authenticity</h3>
+          <p class="muted">Indicate whether you find this citizen report authentic, plausible, or disputed based on local knowledge, press verification, or officer dispatch.</p>
+        </div>
+        <button class="modalClose" data-close="endorsementModal">&times;</button>
+      </div>
+
+      <div id="endorseExistingStats" class="endorsementStatsBox" style="margin: 14px 0;"></div>
+
+      <form id="endorseForm" class="form">
+        <input type="hidden" id="endorseReportId">
+        <label>
+          <span>Your Authenticity Verdict</span>
+          <select id="endorseVerdictSelect" required>
+            <option value="AUTHENTIC">AUTHENTIC &mdash; Corroborated that incident occurred as reported</option>
+            <option value="PLAUSIBLE">PLAUSIBLE &mdash; Consistent with local conditions / credible</option>
+            <option value="DISPUTED">DISPUTED &mdash; Inconsistent with facts / suspected duplicate</option>
+          </select>
+        </label>
+        <label style="margin-top: 12px;">
+          <span>Endorsement Notes / Verification Basis (Optional)</span>
+          <textarea id="endorseNoteInput" rows="3" maxlength="1000" placeholder="State your basis for vouching (e.g. Officer observed dispatch unit; Journalist confirmed with shopkeeper; Neighbor heard collision at 8 PM)."></textarea>
+        </label>
+        <div class="modalActionRow">
+          <button type="button" class="secondary" data-close="endorsementModal">Cancel</button>
+          <button type="submit" class="gold">Submit Authenticity Indication</button>
+        </div>
+      </form>
+
+      <div style="margin-top: 20px;">
+        <h4 style="font-size: 13.5px; color: var(--navy-deep); margin-bottom: 8px;">Recent Community Indications &amp; Vouches</h4>
+        <div id="endorsementsListContainer" style="max-height: 220px; overflow-y: auto;">
+          <p class="muted">No indications recorded yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Edit Credentials -->
+  <div id="editCredentialsModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 580px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Profile Update</span>
+          <h3>Update Credentials &amp; Standing</h3>
+        </div>
+        <button class="modalClose" data-close="editCredentialsModal">&times;</button>
+      </div>
+      <form id="editCredentialsForm" class="form grid">
+        <label>
+          <span>Badge / Service ID Number</span>
+          <input name="badgeNumber" id="editCredBadge" placeholder="e.g. MP-8891">
+        </label>
+        <label>
+          <span>Department / Organization</span>
+          <input name="departmentOrOrg" id="editCredDept" placeholder="e.g. Metropolitan CID, Press Bureau">
+        </label>
+        <label>
+          <span>Official Designation / Rank</span>
+          <input name="designation" id="editCredDesignation" placeholder="e.g. Senior Detective, Senior Correspondent">
+        </label>
+        <label>
+          <span>Official Contact Number</span>
+          <input name="contactNumber" id="editCredContact" placeholder="e.g. +1-555-019-8800">
+        </label>
+        <label class="full">
+          <span>Official Accreditation / Jurisdiction Notes</span>
+          <textarea name="credentialsNotes" id="editCredNotes" rows="3" maxlength="1000" placeholder="Jurisdiction details, supervisory commands, investigative clearance."></textarea>
+        </label>
+        <div class="full modalActionRow">
+          <button type="button" class="secondary" data-close="editCredentialsModal">Cancel</button>
+          <button type="submit" class="primary">Save Credentials</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add & Review Witnesses -->
+  <div id="witnessModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 800px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Witness Statements</span>
+          <h3 id="witnessModalTitle">Witness Statements &amp; Verification</h3>
+          <p class="muted">Independent witness statement collection and consistency evaluation.</p>
+        </div>
+        <button class="modalClose" data-close="witnessModal">&times;</button>
+      </div>
+
+      <div id="witnessList" class="witnessList">
+        <p class="muted">No witness accounts recorded yet.</p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 18px; margin-top: 16px;">
+        <h4 style="margin: 0 0 12px; color: var(--navy-deep);">Record an Independent Witness Statement</h4>
+        <form id="witnessForm" class="form grid">
+          <input type="hidden" id="witnessReportId">
+          <label>
+            <span>Witness Name <span style="color: #992828;">*</span></span>
+            <input name="witnessName" id="witnessNameInput" required placeholder="Full Name">
+          </label>
+          <label>
+            <span>Witness Type</span>
+            <select name="witnessType" id="witnessTypeSelect">
+              <option value="LATER_WITNESS">Later Witness (Independent observation)</option>
+              <option value="INITIAL_SOURCE">Initial Source Witness (Scene reference)</option>
+            </select>
+          </label>
+          <label>
+            <span>Witness Contact (Confidential)</span>
+            <input name="contactDetails" id="witnessContactInput" placeholder="Phone or email">
+          </label>
+          <label>
+            <span>Observation Time</span>
+            <input name="timeObserved" id="witnessTimeObservedInput" type="datetime-local">
+          </label>
+          <label class="full">
+            <span>Location Witness Was Standing</span>
+            <input name="locationObserved" id="witnessLocationObservedInput" placeholder="e.g. Bus stop 50m north across the junction">
+          </label>
+          <label class="full">
+            <span>Independent Statement <span style="color: #992828;">*</span></span>
+            <textarea name="statement" id="witnessStatementInput" rows="3" maxlength="5000" required placeholder="Describe what the witness saw without showing them previous statements."></textarea>
+          </label>
+          <div class="full modalActionRow">
+            <button type="submit" class="primary">Record Witness Account</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Evidence Vault -->
+  <div id="evidenceModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 800px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Evidence Ledger</span>
+          <h3 id="evidenceModalTitle">Evidence Vault &amp; Chain of Custody</h3>
+          <p class="muted">SHA-256 cryptographic hashes seal each piece of evidence against tampering.</p>
+        </div>
+        <button class="modalClose" data-close="evidenceModal">&times;</button>
+      </div>
+
+      <div id="evidenceList" class="evidenceList">
+        <p class="muted">No evidence attached yet.</p>
+      </div>
+
+      <div style="border-top: 1px solid var(--border-subtle); padding-top: 18px; margin-top: 16px;">
+        <h4 style="margin: 0 0 12px; color: var(--navy-deep);">Attach Evidence to Chain of Custody</h4>
+        <form id="evidenceForm" class="form grid">
+          <input type="hidden" id="evidenceReportId">
+          <label>
+            <span>Evidence Title</span>
+            <input name="title" required placeholder="e.g. CCTV Intersection Camera 04">
+          </label>
+          <label>
+            <span>Evidence Type</span>
+            <select name="evidenceType" required>
+              <option value="PHOTO">Photograph</option>
+              <option value="VIDEO">Video footage</option>
+              <option value="DOCUMENT">Official document / FIR</option>
+              <option value="AUDIO">Audio dispatch / call</option>
+              <option value="FORENSIC_REPORT">Forensic lab report</option>
+              <option value="PHYSICAL_ITEM">Physical item receipt</option>
+            </select>
+          </label>
+          <label>
+            <span>File Reference / Identifier</span>
+            <input name="fileReference" required placeholder="e.g. cam04_2030_12_01.mp4">
+          </label>
+          <label>
+            <span>SHA-256 Hash Digest (64 hex characters)</span>
+            <input name="fileHash" maxlength="64" placeholder="Auto-generated or paste 64-char hex">
+          </label>
+          <label class="full">
+            <span>Chain of Custody Handover Log</span>
+            <textarea name="chainOfCustody" rows="2" maxlength="2000" placeholder="e.g. Recovered from store digital video recorder by Officer Marcus. Transferred to evidence locker."></textarea>
+          </label>
+          <div class="full modalActionRow">
+            <button type="submit" class="primary">Seal &amp; Attach Evidence</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Contribute Observations -->
+  <div id="contributeModal" class="modal hidden">
+    <div class="modalContent">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Proximity Corroboration</span>
+          <h3 id="contributeModalTitle">Contribute Corroborating Observations</h3>
+          <p class="muted">Our system evaluates your geolocation distance to the incident and keyword correlation with the case description to generate an explainable confidence rating (0–100%).</p>
+        </div>
+        <button class="modalClose" data-close="contributeModal">&times;</button>
+      </div>
+
+      <div class="glimpseBox" style="margin-bottom: 16px;">
+        <div class="glimpseHeader">
+          <span>Case Overview to Corroborate</span>
+        </div>
+        <div id="modalContribCaseGlimpse" style="font-size: 13.5px;"></div>
+      </div>
+
+      <form id="contributeModalForm" class="form">
+        <input type="hidden" id="modalContribReportId">
+        <label>
+          <span>Your Observations / Information</span>
+          <textarea id="modalContribText" rows="4" maxlength="4000" required placeholder="Describe what you observed independently. Include specific landmarks, vehicle descriptions, or timestamps."></textarea>
+        </label>
+        <label style="margin-top: 12px;">
+          <span>Your Location When Observing</span>
+          <div class="inputWithAction">
+            <input id="modalContribLoc" maxlength="500" placeholder="Street, landmark, city" required>
+            <button type="button" id="modalDetectLocBtn" class="secondary actionBtn">Use GPS</button>
+          </div>
+        </label>
+        <div class="coordRow" style="margin-top: 12px;">
+          <label>
+            <span>Latitude</span>
+            <input id="modalContribLat" type="number" step="any" placeholder="Auto-filled via GPS">
+          </label>
+          <label>
+            <span>Longitude</span>
+            <input id="modalContribLng" type="number" step="any" placeholder="Auto-filled via GPS">
+          </label>
+        </div>
+        <div class="modalActionRow">
+          <button type="button" class="secondary" data-close="contributeModal">Cancel</button>
+          <button type="submit" class="gold">Submit &amp; Evaluate Confidence</button>
+        </div>
+      </form>
+      <div id="modalContribScoreResult" class="hidden" style="margin-top: 16px;"></div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Scene Official -->
+  <div id="officialModal" class="modal hidden">
+    <div class="modalContent">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Intake Personnel</span>
+          <h3 id="officialModalTitle">Record Scene Official Present</h3>
+          <p class="muted">Record law enforcement officers, forensic technicians, or officials present at this incident scene.</p>
+        </div>
+        <button class="modalClose" data-close="officialModal">&times;</button>
+      </div>
+
+      <form id="officialModalForm" class="form grid">
+        <input type="hidden" id="officialModalReportId">
+        <label>
+          <span>Official Full Name</span>
+          <input id="modalOffName" required placeholder="e.g. Insp. Marcus Vance">
+        </label>
+        <label>
+          <span>Badge / Service ID</span>
+          <input id="modalOffBadge" required placeholder="e.g. KA-POL-8821">
+        </label>
+        <label>
+          <span>Department / Unit</span>
+          <input id="modalOffDept" required placeholder="e.g. CID, Traffic Division">
+        </label>
+        <label>
+          <span>Designation / Rank</span>
+          <input id="modalOffDesignation" required placeholder="e.g. Lead Investigating Officer">
+        </label>
+        <label>
+          <span>Contact Information</span>
+          <input id="modalOffContact" placeholder="Phone or email">
+        </label>
+        <label>
+          <span>Arrival / Scene Time</span>
+          <input id="officialArrivalTimeInput" type="datetime-local">
+        </label>
+        <label class="full" style="flex-direction: row; align-items: center; gap: 8px; margin: 4px 0;">
+          <input type="checkbox" id="modalOffFirstTaker">
+          <span><strong>Designate as First Report Taker</strong> (Received and recorded initial FIR)</span>
+        </label>
+        <label class="full">
+          <span>Duties Summary at Scene</span>
+          <textarea id="modalOffDuties" rows="2" maxlength="1000" placeholder="Describe specific actions taken at the scene."></textarea>
+        </label>
+        <div class="full modalActionRow">
+          <button type="button" class="secondary" data-close="officialModal">Cancel</button>
+          <button type="submit" class="primary">Record Official</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Report Scene Officials List -->
+  <div id="reportOfficialsModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 740px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Scene Personnel</span>
+          <h3 id="reportOfficialsModalTitle">Officials Present at Scene</h3>
+        </div>
+        <button class="modalClose" data-close="reportOfficialsModal">&times;</button>
+      </div>
+      <div id="reportOfficialsModalList" class="tableWrapper">
+        <p class="muted">Loading officials list&hellip;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Supplementary Info Contributions List -->
+  <div id="reportContribsModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 740px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Corroboration Feed</span>
+          <h3 id="reportContribsModalTitle">Community Contributions &amp; Proximity Verification</h3>
+        </div>
+        <button class="modalClose" data-close="reportContribsModal">&times;</button>
+      </div>
+      <div id="reportContribsModalList" class="contributionsList">
+        <p class="muted">Loading contributions&hellip;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Case Audit History -->
+  <div id="auditHistoryModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 740px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Audit History</span>
+          <h3 id="auditHistoryModalTitle">Case Immutable Audit History</h3>
+        </div>
+        <button class="modalClose" data-close="auditHistoryModal">&times;</button>
+      </div>
+      <div id="auditHistoryModalList" class="tableWrapper">
+        <p class="muted">Loading audit history&hellip;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Sensitive Case View Inspection Logs -->
+  <div id="viewLogsModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 740px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Access Accountability</span>
+          <h3 id="viewLogsModalTitle">Sensitive Case View Logs</h3>
+          <p class="muted">Accountability log: Every time an authorized official views confidential narrative details, an immutable entry is created.</p>
+        </div>
+        <button class="modalClose" data-close="viewLogsModal">&times;</button>
+      </div>
+      <div id="viewLogsModalList" class="tableWrapper">
+        <p class="muted">Loading inspection logs&hellip;</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Verify Email Authenticity -->
+  <div id="verifyEmailModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 500px;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Email Authenticity</span>
+          <h3>Verify Your Email Address</h3>
+        </div>
+        <button class="modalClose" data-close="verifyEmailModal">&times;</button>
+      </div>
+
+      <div style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px;">
+        Enter the 6-digit verification code sent to your registered email address (<strong id="verifyModalEmailText"></strong>) to authenticate your identity.
+      </div>
+
+      <form id="verifyEmailForm" class="form">
+        <label>
+          <span>6-Digit Verification Code</span>
+          <input name="code" id="verifyEmailCodeInput" maxlength="6" pattern="[0-9]{6}" required placeholder="e.g. 849201" style="font-family: var(--font-mono); font-size: 18px; letter-spacing: 4px; text-align: center;">
+        </label>
+        
+        <p id="verifyEmailMsg" class="message" role="status" style="margin-top: 10px; font-weight: 600; text-align: center;"></p>
+
+        <div class="modalActionRow" style="margin-top: 20px;">
+          <button type="button" class="secondary" id="requestNewCodeBtn">Resend Code</button>
+          <button type="submit" class="gold">Verify Email</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Full Scene Photograph Zoom -->
+  <div id="photoModal" class="modal hidden">
+    <div class="modalContent" style="max-width: 800px; text-align: center;">
+      <div class="modalHeader">
+        <div class="modalTitleGroup">
+          <span class="slideNumberBadge">Visual Record</span>
+          <h3 id="photoModalTitle">Incident Photographic Evidence</h3>
+        </div>
+        <button class="modalClose" data-close="photoModal">&times;</button>
+      </div>
+      <div style="margin: 16px 0;">
+        <img id="photoModalImg" class="photoModalImg" src="" alt="Scene Photograph">
+      </div>
+      <div id="photoModalMeta" style="background: var(--sand-soft); border: 1px solid var(--sand-border); border-radius: 6px; padding: 12px 16px; font-family: var(--font-mono); font-size: 12px; text-align: left; word-break: break-all;">
+        <!-- Metadata dynamically populated -->
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align: center; margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.82rem;">
+    Digital Reporting System &middot; Anonymous Confidential Lodgement &middot; Secret Keyphrase Access &middot; Two-Way Authority Inquiries &middot; PostgreSQL &amp; Spring Boot
+  </footer>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+services:
+  # Web Service running Spring Boot + bundled static frontend
+  - type: web
+    name: digital-reporting-system
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: digital-reporting-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.postgresql.Driver
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: SPRING_JPA_SHOW_SQL
+        value: "false"
+
+# Managed PostgreSQL Database Instance
+databases:
+  - name: digital-reporting-db
+    databaseName: reporting_system
+    user: postgres
+    plan: free
+    region: oregon
