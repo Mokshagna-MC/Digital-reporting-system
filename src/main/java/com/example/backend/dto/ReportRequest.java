@@ -34,6 +34,8 @@ public class ReportRequest {
     private String photoData;
     private String photoName;
     private String keyphrase;
+    private String powChallenge;
+    private String powNonce;
 
     public String getEventType(){ return eventType; }
     public void setEventType(String eventType){ this.eventType = eventType; }
@@ -57,4 +59,8 @@ public class ReportRequest {
     public void setPhotoName(String photoName){ this.photoName = photoName; }
     public String getKeyphrase(){ return keyphrase; }
     public void setKeyphrase(String keyphrase){ this.keyphrase = keyphrase; }
+    public String getPowChallenge() { return powChallenge; }
+    public void setPowChallenge(String powChallenge) { this.powChallenge = powChallenge; }
+    public String getPowNonce() { return powNonce; }
+    public void setPowNonce(String powNonce) { this.powNonce = powNonce; }
 }

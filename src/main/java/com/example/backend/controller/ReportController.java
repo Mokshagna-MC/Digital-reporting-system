@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -67,6 +68,145 @@ public class ReportController {
         this.passwordEncoder = passwordEncoder;
     }
 
+    private static final String POW_SECRET = "DRS_POW_SECRET_SALT_2026";
+
+    @GetMapping("/challenge")
+    public ResponseEntity<?> getPowChallenge() {
+        long timestamp = System.currentTimeMillis();
+        String randomSalt = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+        String signature = computePowHmac(timestamp + ":" + randomSalt);
+        String challenge = timestamp + ":" + randomSalt + ":" + signature;
+        return ResponseEntity.ok(Map.of(
+                "challenge", challenge,
+                "difficultyPrefix", "0000"
+        ));
+    }
+
+    private static String computePowHmac(String data) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest((data + POW_SECRET).getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) sb.append(String.format("%02x", b));
+            return sb.toString().substring(0, 16);
+        } catch (Exception e) {
+            return "fallback_sig";
+        }
+    }
+
+    private boolean verifyPoW(String challenge, String nonce) {
+        if (challenge == null || nonce == null || challenge.isBlank() || nonce.isBlank()) {
+            return false;
+        }
+        String[] parts = challenge.split(":");
+        if (parts.length != 3) {
+            return false;
+        }
+        try {
+            long timestamp = Long.parseLong(parts[0]);
+            long now = System.currentTimeMillis();
+            if (now - timestamp > 300_000 || timestamp - now > 60_000) {
+                return false;
+            }
+            String expectedSig = computePowHmac(parts[0] + ":" + parts[1]);
+            if (!expectedSig.equals(parts[2])) {
+                return false;
+            }
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest((challenge + ":" + nonce.trim()).getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 2; i++) {
+                sb.append(String.format("%02x", hash[i]));
+            }
+            return sb.toString().startsWith("0000");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private String validateContentQuality(String text, String fieldName) {
+        if (text == null || text.trim().length() < 12) {
+            return fieldName + " must contain at least 12 characters with descriptive details.";
+        }
+        String clean = text.trim();
+        if (Pattern.compile("(.)\\1{4,}").matcher(clean).find()) {
+            return fieldName + " contains repetitive characters or keyboard spam. Please provide genuine descriptive text.";
+        }
+        String[] rawWords = clean.toLowerCase().split("[^a-zA-Z0-9]+");
+        Set<String> distinctWords = new HashSet<>();
+        for (String w : rawWords) {
+            if (w.length() >= 2) {
+                distinctWords.add(w);
+            }
+        }
+        if (distinctWords.size() < 3) {
+            return fieldName + " must contain at least 3 distinct descriptive words.";
+        }
+        int alphaCount = 0;
+        Set<Character> distinctChars = new HashSet<>();
+        for (char c : clean.toLowerCase().toCharArray()) {
+            if (Character.isLetter(c)) {
+                alphaCount++;
+                distinctChars.add(c);
+            }
+        }
+        if (alphaCount >= 15 && ((double) distinctChars.size() / alphaCount) < 0.22) {
+            return fieldName + " appears repetitive or lacks sufficient character variety. Please describe what occurred with realistic details.";
+        }
+        return null;
+    }
+
+    private Report findNearDuplicate(ReportRequest req, LocalDateTime now) {
+        LocalDateTime cutoff = now.minusMinutes(45);
+        List<Report> recent = reports.findByCreatedAtAfterOrderByCreatedAtDesc(cutoff);
+        if (recent.isEmpty()) return null;
+
+        String incomingCat = req.getEventType() != null ? req.getEventType().trim().toLowerCase() : "";
+        Set<String> incomingTokens = extractTokensForMatch(req.getDescription() + " " + req.getLoc());
+
+        for (Report prior : recent) {
+            if (prior.getEventType() == null || !prior.getEventType().trim().equalsIgnoreCase(incomingCat)) {
+                continue;
+            }
+            if (req.getLatitude() != null && req.getLongitude() != null &&
+                    prior.getLatitude() != null && prior.getLongitude() != null) {
+                double dist = haversineDistance(req.getLatitude(), req.getLongitude(), prior.getLatitude(), prior.getLongitude());
+                if (dist <= 0.6) {
+                    return prior;
+                }
+            }
+            if (req.getLoc() != null && prior.getLoc() != null &&
+                    req.getLoc().trim().equalsIgnoreCase(prior.getLoc().trim())) {
+                return prior;
+            }
+            Set<String> priorTokens = extractTokensForMatch(prior.getDescription() + " " + prior.getLoc());
+            if (!incomingTokens.isEmpty()) {
+                long overlap = incomingTokens.stream().filter(priorTokens::contains).count();
+                if (((double) overlap / incomingTokens.size()) >= 0.50) {
+                    return prior;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static double haversineDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    private static Set<String> extractTokensForMatch(String text) {
+        if (text == null) return Collections.emptySet();
+        return Arrays.stream(text.toLowerCase().split("[^a-zA-Z0-9]+"))
+                .filter(w -> w.length() >= 4)
+                .collect(Collectors.toSet());
+    }
+
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@Valid @RequestBody ReportRequest request, HttpSession session) {
@@ -79,6 +219,27 @@ public class ReportController {
         if (request.getDateTime().isAfter(maxAllowed.plusSeconds(30))) {
             return ResponseEntity.badRequest().body(Map.of("message",
                     "Incident date and time cannot be in the future (the incident must have already occurred). Current time: " + nowLocal));
+        }
+
+        // 0. Feature 2: Client-side Proof-of-Work Challenge verification (anti-bot burst spam protection)
+        if (request.getPowChallenge() != null && !request.getPowChallenge().isBlank()) {
+            if (!verifyPoW(request.getPowChallenge(), request.getPowNonce())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "message", "Cryptographic proof-of-work verification failed. Please try submitting again."
+                ));
+            }
+        }
+
+        // Feature 4: Semantic Entropy & Quality check (rejects keyboard mash, single-char loops, gibberish)
+        String descQualityErr = validateContentQuality(request.getDescription(), "Incident description");
+        if (descQualityErr != null) {
+            return ResponseEntity.badRequest().body(Map.of("message", descQualityErr));
+        }
+        if (request.getIncidentOverview() != null && !request.getIncidentOverview().isBlank()) {
+            String overviewQualityErr = validateContentQuality(request.getIncidentOverview(), "Public glimpse");
+            if (overviewQualityErr != null) {
+                return ResponseEntity.badRequest().body(Map.of("message", overviewQualityErr));
+            }
         }
 
         Report r = new Report();
@@ -118,6 +279,13 @@ public class ReportController {
         // 4. Anonymous Session Token for persistent browser resume
         String sessionToken = UUID.randomUUID().toString();
         r.setAnonymousSessionToken(sessionToken);
+
+        // Feature 3: Spatio-Temporal Near-Duplicate Merging (Cluster, Don't Discard)
+        Report nearDuplicate = findNearDuplicate(request, LocalDateTime.now());
+        if (nearDuplicate != null) {
+            r.setParentReferenceCode(nearDuplicate.getReferenceCode());
+            r.setDuplicateMerged(true);
+        }
 
         Report saved = reports.save(r);
 
@@ -192,10 +360,24 @@ public class ReportController {
                         saved.getReferenceCode(), r.getEventType(), r.getLoc(), geoInfo, r.isAnonymous() ? "YES" : "NO"),
                 null, "PENDING");
 
+        if (nearDuplicate != null) {
+            auditLogService.log(saved.getId(), "DUPLICATE_CLUSTERED", actorUsername, actorRole,
+                    "Incident clustered as a corroborating addendum under primary case " + nearDuplicate.getReferenceCode(),
+                    null, nearDuplicate.getReferenceCode());
+        }
+
         Map<String, Object> resp = toMap(saved, reporter, session);
         resp.put("secretKeyphrase", keyphrase);
         resp.put("sessionToken", sessionToken);
-        resp.put("accessMessage", "Incident lodged successfully! Save your Secret Keyphrase to track, update, and communicate with investigating authorities.");
+        if (nearDuplicate != null) {
+            resp.put("duplicateClustered", true);
+            resp.put("parentReferenceCode", nearDuplicate.getReferenceCode());
+            resp.put("accessMessage", "Incident recorded and clustered as a corroborating addendum to recent case " +
+                    nearDuplicate.getReferenceCode() + ". Your unique keyphrase has been generated and case history is preserved.");
+        } else {
+            resp.put("duplicateClustered", false);
+            resp.put("accessMessage", "Incident lodged successfully! Save your Secret Keyphrase to track, update, and communicate with investigating authorities.");
+        }
         return ResponseEntity.ok(resp);
     }
 
@@ -710,6 +892,8 @@ public class ReportController {
         m.put("photoUrl", r.getPhotoUrl());
         m.put("viewsCount", auditLogRepository.countByReportIdAndAction(r.getId(), "SENSITIVE_REPORT_VIEWED"));
 
+                m.put("parentReferenceCode", r.getParentReferenceCode());
+        m.put("duplicateMerged", r.getDuplicateMerged());
         m.put("loc", r.getLoc());
         m.put("latitude", r.getLatitude());
         m.put("longitude", r.getLongitude());

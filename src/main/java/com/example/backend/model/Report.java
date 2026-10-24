@@ -56,6 +56,12 @@ public class Report {
     @Column(name = "anonymous_session_token", length = 100)
     private String anonymousSessionToken;
 
+    @Column(name = "parent_reference_code", length = 50)
+    private String parentReferenceCode;
+
+    @Column(name = "is_duplicate_merged")
+    private Boolean duplicateMerged = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = true)
     private User reporter;
@@ -117,4 +123,8 @@ public class Report {
     public void setAnonymous(boolean anonymous) { this.anonymous = anonymous; }
     public String getAnonymousSessionToken() { return anonymousSessionToken; }
     public void setAnonymousSessionToken(String anonymousSessionToken) { this.anonymousSessionToken = anonymousSessionToken; }
+    public String getParentReferenceCode() { return parentReferenceCode; }
+    public void setParentReferenceCode(String parentReferenceCode) { this.parentReferenceCode = parentReferenceCode; }
+    public Boolean getDuplicateMerged() { return duplicateMerged != null && duplicateMerged; }
+    public void setDuplicateMerged(Boolean duplicateMerged) { this.duplicateMerged = duplicateMerged; }
 }

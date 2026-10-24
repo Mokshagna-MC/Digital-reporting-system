@@ -28,3 +28,4 @@ EXPOSE 8080
 
 # Run Spring Boot with container-aware JVM settings
 ENTRYPOINT ["sh", "-c", "java -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -Dserver.port=${PORT} -jar app.jar"]
+

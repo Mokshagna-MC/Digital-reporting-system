@@ -509,6 +509,29 @@ $$(".togglePasswordBtn").forEach(btn => {
 });
 
 // ==========================================
+// Lightweight Cryptographic Proof-of-Work Solver (Zero-Knowledge Bot Throttle)
+// ==========================================
+async function solveProofOfWork(challenge, difficultyPrefix = "0000") {
+  const enc = new TextEncoder();
+  let nonce = 0;
+  while (true) {
+    const data = enc.encode(challenge + ":" + nonce);
+    const hashBuf = await crypto.subtle.digest("SHA-256", data);
+    const bytes = new Uint8Array(hashBuf);
+    if (bytes[0] === 0 && bytes[1] === 0) {
+      return String(nonce);
+    }
+    nonce++;
+    if (nonce % 8000 === 0) {
+      await new Promise(r => setTimeout(r, 0));
+    }
+    if (nonce > 500000) {
+      return String(nonce);
+    }
+  }
+}
+
+// ==========================================
 // Report Lodgement Submission (Zero Personal Data)
 // ==========================================
 $("#reportForm")?.addEventListener("submit", async e => {
@@ -561,7 +584,27 @@ $("#reportForm")?.addEventListener("submit", async e => {
   delete f.initialOfficialArrival;
   delete f.initialOfficialDuties;
 
+  const submitBtn = e.target.querySelector("button[type='submit']");
+  const origBtnText = submitBtn ? submitBtn.textContent : "Submit Incident & Get Keyphrase";
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Securing cryptographic proof-of-work...";
+  }
+
   try {
+    // Feature 2: Proof-of-Work Challenge
+    try {
+      const challengeRes = await fetch("/api/reports/challenge").then(r => r.json());
+      if (challengeRes && challengeRes.challenge) {
+        const nonce = await solveProofOfWork(challengeRes.challenge, challengeRes.difficultyPrefix || "0000");
+        f.powChallenge = challengeRes.challenge;
+        f.powNonce = nonce;
+      }
+    } catch (powErr) {
+      console.warn("PoW challenge error:", powErr);
+    }
+
+    if (submitBtn) submitBtn.textContent = "Submitting Incident...";
     const res = await api("/api/reports", {method: "POST", body: JSON.stringify(f)});
     e.target.reset();
     resetPhotoDropZone();
@@ -588,10 +631,16 @@ $("#reportForm")?.addEventListener("submit", async e => {
     $("#keyphraseSuccessModal").classList.remove("hidden");
 
     updateSessionUI();
-    showMessage("#reportMessage", "Incident lodged successfully! Save your Secret Keyphrase to manage this case.", true);
+    const successMsg = res.accessMessage || "Incident lodged successfully! Save your Secret Keyphrase to manage this case.";
+    showMessage("#reportMessage", successMsg, true);
     await refreshAll();
   } catch(err) {
     showMessage("#reportMessage", err.message);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = origBtnText;
+    }
   }
 });
 
@@ -1044,6 +1093,11 @@ function renderReportsList(reports, containerEl) {
             </div>
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
+            ${r.parentReferenceCode ? `
+              <span class="slideNumberBadge" style="background: rgba(194, 162, 104, 0.15); color: var(--sand-gold); border: 1px solid var(--sand-gold); font-size: 11px;" title="Clustered as a corroborating addendum to case ${safe(r.parentReferenceCode)}">
+                🔗 Addendum to ${safe(r.parentReferenceCode)}
+              </span>
+            ` : ''}
             <button type="button" class="viewLogsBadge" onclick="openViewLogsModal(${r.id}, '${safe(refCode)}')" title="View sensitive access inspection log">
               👁️ <strong>${r.viewsCount || 0}</strong> Views
             </button>
