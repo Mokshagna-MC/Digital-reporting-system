@@ -103,6 +103,19 @@ This document provides a complete technical explanation of the **Digital Reporti
 * Every status update, FIR assignment, witness submission, and sensitive narrative access is logged in `audit_logs`.
 * Whenever an official reads a masked narrative, `logView()` automatically increments the inspection counter (`viewsCount`), ensuring internal accountability against unauthorized data snooping.
 
+### 3.8. Zero-Knowledge Anti-Spam Architecture (No User Ratings Required)
+* **Design Philosophy**: Because citizens submit anonymously, the platform explicitly **rejects persistent user ratings or IP bans**—a panicked reporter or someone whose phone was misused could submit a genuine emergency report that must never be discarded.
+* **Feature 2 — Client-Side Proof-of-Work (PoW / Hashcash)**:
+  - Endpoint `/api/reports/challenge` issues a signed, time-limited cryptographic puzzle.
+  - The citizen's browser solves `SHA-256(challenge + ":" + nonce)` with a `"0000"` prefix (~300ms on client CPU).
+  - For a human filing an incident, the delay is imperceptible. For automated spam bots firing rapid loops, computing thousands of hashes exhausts CPU and grinds spam attacks to a complete halt without collecting personal tracking data.
+* **Feature 3 — Spatio-Temporal Near-Duplicate Clustering**:
+  - When an incident is filed, the system scans the database for reports in the same category within the last 45 minutes that share either geographic coordinates ($\le 0.6\text{ km}$ via Haversine distance), matching location strings, or $\ge 50\%$ narrative token overlap.
+  - **Preserves Evidence Without Clutter**: Instead of discarding or rejecting the report, the system marks it as `parentReferenceCode = primaryCase.referenceCode` and `duplicateMerged = true`. It generates a valid keyphrase for the reporter, preserving 100% of their photos and text, while displaying an `🔗 Addendum to Case [REF]` badge on the public directory so the feed remains consolidated.
+* **Feature 4 — Semantic Entropy & Minimum Quality Validation**:
+  - Protects against keyboard mashing (e.g. `aaaaaa`, `asdfasdfasdf`, `11111`) and gibberish.
+  - Enforces minimum distinct descriptive words ($\ge 3$ unique words) and character diversity ratios ($\ge 22\%$ unique alphabetic characters over length 15), returning polite, constructive feedback if text appears repetitive.
+
 ---
 
 ## 4. Database Schema Structure (PostgreSQL)
