@@ -2450,3 +2450,38 @@ tr:hover td {
   border-color: var(--sand-gold);
   transform: translateX(-2px);
 }
+
+.hoverSidebarHandle .handleBadge {
+  font-size: 8.5px;
+  background: rgba(194, 162, 104, 0.2);
+  color: var(--sand-gold);
+  border: 1px solid var(--sand-gold);
+  padding: 3px 4px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.1em;
+}
+
+.hoverMetricsDrawer:hover .hoverSidebarHandle .handleBadge,
+.hoverMetricsDrawer.open .hoverSidebarHandle .handleBadge {
+  background: #0A1215;
+  color: #C2A268;
+}
+
+.hoverSidebarHandle {
+  animation: handleEdgePulse 3s infinite ease-in-out;
+}
+
+@keyframes handleEdgePulse {
+  0%, 100% {
+    box-shadow: -6px 4px 18px rgba(0, 0, 0, 0.45);
+    border-color: var(--sand-gold);
+  }
+  50% {
+    box-shadow: -8px 4px 24px rgba(194, 162, 104, 0.5);
+    border-color: #E6CA85;
+  }
+}

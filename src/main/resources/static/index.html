@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=2.6">
+  <link rel="stylesheet" href="/styles.css?v=2.7">
 </head>
 <body>
 
@@ -121,27 +121,28 @@
 <!-- ==========================================
      HOVER-REVEAL METRICS SIDEBAR (SLIDES OUT ONLY ON MOUSE HOVER)
      ========================================== -->
-<aside class="hoverMetricsDrawer" id="hoverMetricsDrawer" aria-label="Incident Case Metrics">
-  <div class="hoverSidebarHandle" id="hoverSidebarHandle" title="Hover to view Case Metrics">
+<aside class="hoverMetricsDrawer" id="hoverMetricsDrawer" aria-label="All Incident Case Metrics">
+  <div class="hoverSidebarHandle" id="hoverSidebarHandle" title="Hover to view all 4 Case Metric Blocks">
     <span class="handleIcon">📊</span>
-    <span class="handleTitle">CASE METRICS</span>
+    <span class="handleTitle">ALL 4 CASE BLOCKS</span>
+    <span class="handleBadge">METRICS</span>
     <span class="handleIndicator">◀</span>
   </div>
   <div class="hoverSidebarContent">
     <div class="sidebarCardHeader">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-        <span class="slideNumberBadge retroFont">LEDGER METRICS</span>
-        <span class="muted" style="font-size:10px; font-family:var(--font-mono);">HOVER TO VIEW</span>
+        <span class="slideNumberBadge retroFont">ALL 4 STAT BLOCKS</span>
+        <span class="muted" style="font-size:10px; font-family:var(--font-mono);">HOVER SIDEBAR</span>
       </div>
-      <h3 class="sidebarHeading">Case Distribution</h3>
-      <p class="muted" style="font-size: 11.5px; margin: 4px 0 10px;">Live caseload &middot; Click any card to filter</p>
+      <h3 class="sidebarHeading">Case Metric Ledger</h3>
+      <p class="muted" style="font-size: 11.5px; margin: 4px 0 10px;">Total Cases &middot; Pending &middot; Active &middot; Resolved &middot; Click to filter</p>
     </div>
 
     <div class="statsGrid verticalStats" id="mainStatsBar">
       <div class="statCard statFilterBtn active" data-status="ALL" title="Click to view all incident cases">
         <div class="statTop">
           <span class="statLabel">Total Cases</span>
-          <span class="slideNumberBadge retroFont">01</span>
+          <span class="slideNumberBadge retroFont">BLOCK 01</span>
         </div>
         <div class="statValue retroFont" id="totalCount">0</div>
         <div class="dualProgressBar"><div class="progressFill" id="barTotal" style="width: 100%;"></div></div>
@@ -149,7 +150,7 @@
       <div class="statCard statFilterBtn" data-status="PENDING" title="Click to filter Pending Initial Review">
         <div class="statTop">
           <span class="statLabel">Pending Review</span>
-          <span class="slideNumberBadge retroFont">02</span>
+          <span class="slideNumberBadge retroFont">BLOCK 02</span>
         </div>
         <div class="statValue retroFont" id="pendingCount">0</div>
         <div class="dualProgressBar"><div class="progressFill" id="barPending" style="width: 0%;"></div></div>
@@ -157,7 +158,7 @@
       <div class="statCard statFilterBtn" data-status="INVESTIGATING" title="Click to filter Active Investigations">
         <div class="statTop">
           <span class="statLabel">Active Investigations</span>
-          <span class="slideNumberBadge retroFont">03</span>
+          <span class="slideNumberBadge retroFont">BLOCK 03</span>
         </div>
         <div class="statValue retroFont" id="investigatingCount">0</div>
         <div class="dualProgressBar"><div class="progressFill" id="barInvestigating" style="width: 0%;"></div></div>
@@ -165,7 +166,7 @@
       <div class="statCard statFilterBtn" data-status="RESOLVED" title="Click to filter Resolved / Closed Cases">
         <div class="statTop">
           <span class="statLabel">Resolved / Closed</span>
-          <span class="slideNumberBadge retroFont">04</span>
+          <span class="slideNumberBadge retroFont">BLOCK 04</span>
         </div>
         <div class="statValue retroFont" id="resolvedCount">0</div>
         <div class="dualProgressBar"><div class="progressFill" id="barResolved" style="width: 0%;"></div></div>
@@ -1333,6 +1334,6 @@
   </footer>
 </main>
 
-<script src="/app.js?v=2.6"></script>
+<script src="/app.js?v=2.7"></script>
 </body>
 </html>
