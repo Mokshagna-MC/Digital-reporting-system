@@ -36,6 +36,8 @@ public class ReportRequest {
     private String keyphrase;
     private String powChallenge;
     private String powNonce;
+    private String threatLevel;
+    private String importance;
 
     public String getEventType(){ return eventType; }
     public void setEventType(String eventType){ this.eventType = eventType; }
@@ -63,4 +65,8 @@ public class ReportRequest {
     public void setPowChallenge(String powChallenge) { this.powChallenge = powChallenge; }
     public String getPowNonce() { return powNonce; }
     public void setPowNonce(String powNonce) { this.powNonce = powNonce; }
+    public String getThreatLevel() { return threatLevel; }
+    public void setThreatLevel(String threatLevel) { this.threatLevel = threatLevel; }
+    public String getImportance() { return importance; }
+    public void setImportance(String importance) { this.importance = importance; }
 }

@@ -6,7 +6,7 @@
   <title>Digital Reporting System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -15,34 +15,45 @@
      NETWORK-LEVEL IP SCRUBBING & ENCRYPTION ENTRANCE GATE
      ========================================== -->
 <div id="networkSecurityOverlay" class="securityOverlay hidden">
-  <div class="securityTerminalBox">
-    <div class="terminalHeader">
-      <div class="terminalButtons">
-        <span class="termDot redDot"></span>
-        <span class="termDot yellowDot"></span>
-        <span class="termDot greenDot"></span>
+  <div class="zkStartupModal">
+    <div class="terminalHeaderBar">
+      <div class="terminalDots">
+        <span class="tDot red"></span>
+        <span class="tDot yellow"></span>
+        <span class="tDot green"></span>
       </div>
-      <div class="terminalTitle">DRS://NETWORK_DEFENSE/ZERO_LOG_GATEWAY.sh</div>
+      <div class="terminalBarTitle">DRS://NETWORK_DEFENSE/ZERO_KNOWLEDGE_SHIELD.sh</div>
     </div>
-    <div class="terminalBody">
-      <div class="terminalScanLine"></div>
-      <div class="terminalIconWrap">
-        <div class="radarSpinner"></div>
-        <div class="lockIconPulse">🛡️</div>
+    <div class="zkModalBody">
+      <!-- Self-Drawing Cryptographic SVG Shield -->
+      <div class="shieldDrawWrap">
+        <svg class="shieldSvg" viewBox="0 0 100 120" width="84" height="100">
+          <path class="shieldPath" d="M50 10 L88 28 C88 75 50 105 50 105 C50 105 12 75 12 28 Z" fill="none" stroke="#4EAD8A" stroke-width="4.5" stroke-linejoin="round" />
+          <path class="shieldGlowPath" d="M50 16 L82 32 C82 72 50 98 50 98 C50 98 18 72 18 32 Z" fill="none" stroke="rgba(78, 173, 138, 0.25)" stroke-width="2" />
+          <!-- Inner Lock -->
+          <circle class="lockCircle" cx="50" cy="50" r="11" fill="none" stroke="#C2A268" stroke-width="3" />
+          <rect class="lockBody" x="41" y="58" width="18" height="20" rx="3" fill="#C2A268" />
+          <polygon points="50,64 47,72 53,72" fill="#0B161A" />
+        </svg>
       </div>
-      <h3 class="terminalHeading">INITIALIZING NETWORK-LEVEL IP SCRUBBING</h3>
-      <div class="terminalLogSequence" id="terminalLogSequence">
-        <div class="termLogItem active" id="logStep1"><span class="termPrompt">&gt;&gt;</span> [1/4] Intercepting connection via strict zero-log reverse proxy...</div>
-        <div class="termLogItem" id="logStep2"><span class="termPrompt">&gt;&gt;</span> [2/4] Scrubbing TCP/IP headers (X-Forwarded-For discarded, RAM-only logging)...</div>
-        <div class="termLogItem" id="logStep3"><span class="termPrompt">&gt;&gt;</span> [3/4] Establishing Tor circuit route &amp; 256-bit WebCrypto handshake...</div>
-        <div class="termLogItem" id="logStep4"><span class="termPrompt">&gt;&gt;</span> [4/4] <span class="termSuccess">ANONYMOUS BLIND-CARRIER CHANNEL ESTABLISHED.</span></div>
+
+      <div class="zkTerminalStepTitle" id="zkStepDisplayText">Encrypting Connection...</div>
+      <div class="zkStepSubtitle" id="zkStepSubText">Applying zero-trace anonymity protocols</div>
+
+      <div class="zkProgressContainer">
+        <div class="zkProgressBar" id="zkProgressBarInner" style="width: 25%;"></div>
       </div>
-      <div class="terminalProgressWrap">
-        <div class="terminalProgressBar" id="terminalProgressBar" style="width: 20%;"></div>
+
+      <div class="zkSequenceLogs" id="zkSequenceLogs">
+        <div class="zkLogItem active" id="step1"><span class="zkPrompt">&gt;&gt;</span> 1. Encrypting Connection...</div>
+        <div class="zkLogItem" id="step2"><span class="zkPrompt">&gt;&gt;</span> 2. Scrubbing IP Address...</div>
+        <div class="zkLogItem" id="step3"><span class="zkPrompt">&gt;&gt;</span> 3. Establishing Zero-Knowledge Protocol...</div>
+        <div class="zkLogItem" id="step4"><span class="zkPrompt">&gt;&gt;</span> 4. No Personal Data Collected.</div>
       </div>
-      <div class="terminalFooter">
-        <span class="terminalFootnote">Zero IP addresses logged &middot; Client-Side E2EE WebCrypto</span>
-        <button type="button" class="termSkipBtn" id="skipSecurityOverlayBtn">ENTER DASHBOARD &rarr;</button>
+
+      <div class="zkModalFooter">
+        <span class="zkFootnote">Blind Carrier &middot; Client-Side WebCrypto E2EE</span>
+        <button type="button" class="zkSkipBtn" id="skipSecurityOverlayBtn">DIRECT ACCESS &rarr;</button>
       </div>
     </div>
   </div>
@@ -92,7 +103,7 @@
   </div>
   <div class="topbarActions">
     <div class="ipSecurityBadge" id="ipSecurityPill" title="Network-level protection: Tor/Reverse proxy IP scrubbing active">
-      <span class="terminalBlink">●</span> <span class="retroFont">IP_MASKED // NO_LOG</span>
+      <span class="terminalBlink">●</span> <span class="retroFont">IP_SCRUBBED // NO_LOG</span>
     </div>
     <button id="btnTrackCaseNav" class="secondary smallBtn" type="button" title="Track or resume an existing case with Secret Keyphrase">
       Track Case
@@ -286,6 +297,26 @@
             </div>
           </label>
 
+                    <label>
+            <span>Threat Level Assessment</span>
+            <select name="threatLevel" id="reportThreatSelect">
+              <option value="LOW">Low Threat</option>
+              <option value="MEDIUM" selected>Medium Threat</option>
+              <option value="HIGH">High Threat</option>
+              <option value="CRITICAL">Critical Threat</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Investigative Importance</span>
+            <select name="importance" id="reportImportanceSelect">
+              <option value="ROUTINE" selected>Routine</option>
+              <option value="URGENT">Urgent Attention</option>
+              <option value="PRIORITY">Priority Case</option>
+              <option value="HIGH_PRIORITY">High Priority / Expedited</option>
+            </select>
+          </label>
+
           <div class="coordRow full">
             <label>
               <span>Latitude (Optional)</span>
@@ -342,12 +373,12 @@
 
           <!-- Confidential Detailed Narrative -->
           <label class="full">
-            <span>Confidential Investigation Narrative (Protected &amp; Masked) <span style="color: #992828;">*</span></span>
+            <span>Confidential Investigation Narrative (Zero-Knowledge WebCrypto E2EE) <span style="color: #992828;">*</span></span>
             <textarea name="description" rows="4" maxlength="5000" placeholder="Describe exact sequences of events, specific vehicle makes, suspect clothing, directions of travel, items taken, and confidential forensic specifics." required></textarea>
             <div class="privacyShield">
               <div>
                 <strong>Independent Witness Anti-Cheating Protection:</strong><br>
-                This detailed description will be <em>masked from ordinary citizens and other reporters</em>. It is visible only to you (via your Secret Keyphrase) and authorized officials. This prevents prospective witnesses from copying answers to falsely inflate consistency scores.
+                This detailed narrative is <em>encrypted client-side with AES-GCM-256 before transport</em>. The backend acts as a blind carrier and cannot read it. Decrypted only with your Secret Keyphrase. This prevents prospective witnesses from copying answers to falsely inflate consistency scores.
               </div>
             </div>
           </label>
@@ -462,16 +493,30 @@
             <h2>Incident Case Directory</h2>
             <p class="muted">Live cases, public glimpses, witness consistency verification, evidence hashes, and community authenticity indications.</p>
           </div>
-          <div class="inputWithAction">
-            <select id="statusFilter" aria-label="Filter by status" style="width: 170px;">
-              <option value="">All Statuses</option>
-              <option>PENDING</option>
-              <option>UNDER_REVIEW</option>
-              <option>INVESTIGATING</option>
-              <option>RESOLVED</option>
-              <option>CLOSED</option>
+          <div class="filterToolbar inputWithAction">
+            <select id="statusFilter" aria-label="Filter by status" class="filterSelect" style="min-width: 140px;">
+              <option value="">STATUS: ALL</option>
+              <option value="PENDING">PENDING</option>
+              <option value="UNDER_REVIEW">UNDER REVIEW</option>
+              <option value="INVESTIGATING">INVESTIGATING</option>
+              <option value="RESOLVED">RESOLVED</option>
+              <option value="CLOSED">CLOSED</option>
             </select>
-            <button id="refreshBtn" class="secondary refreshBtn">Refresh</button>
+            <select id="threatFilter" aria-label="Filter by Threat Level" class="filterSelect" style="min-width: 140px;">
+              <option value="">THREAT: ALL</option>
+              <option value="LOW">LOW THREAT</option>
+              <option value="MEDIUM">MEDIUM THREAT</option>
+              <option value="HIGH">HIGH THREAT</option>
+              <option value="CRITICAL">CRITICAL THREAT</option>
+            </select>
+            <select id="importanceFilter" aria-label="Filter by Importance" class="filterSelect" style="min-width: 150px;">
+              <option value="">IMPORTANCE: ALL</option>
+              <option value="ROUTINE">ROUTINE</option>
+              <option value="URGENT">URGENT</option>
+              <option value="PRIORITY">PRIORITY</option>
+              <option value="HIGH_PRIORITY">HIGH PRIORITY</option>
+            </select>
+            <button id="refreshBtn" class="secondary refreshBtn">&orarr; Refresh</button>
           </div>
         </div>
 

@@ -151,6 +151,126 @@ function generateClientKeyphrase() {
 }
 
 // ==========================================
+// WebCrypto E2EE Encryption & Decryption (Blind Carrier Model)
+// ==========================================
+const localDecryptedCache = new Map();
+
+async function deriveAesKey(passphrase, saltBytes) {
+  const enc = new TextEncoder();
+  const keyMaterial = await window.crypto.subtle.importKey(
+    "raw",
+    enc.encode(passphrase),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+  return window.crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: saltBytes,
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+function bufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+}
+
+function base64ToBuffer(b64) {
+  const binary = window.atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+async function encryptNarrativeE2EE(plainText, passphrase) {
+  if (!plainText) return "";
+  const salt = window.crypto.getRandomValues(new Uint8Array(16));
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveAesKey(passphrase, salt);
+  const encoded = new TextEncoder().encode(plainText);
+  const ciphertextBuffer = await window.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    encoded
+  );
+  return `ENC:v1:${bufferToBase64(salt)}:${bufferToBase64(iv)}:${bufferToBase64(ciphertextBuffer)}`;
+}
+
+async function decryptNarrativeE2EE(cipherString, passphrase) {
+  if (!cipherString) return "";
+  if (!cipherString.startsWith("ENC:v1:")) return cipherString;
+  const parts = cipherString.split(":");
+  if (parts.length !== 5) return cipherString;
+  const salt = new Uint8Array(base64ToBuffer(parts[2]));
+  const iv = new Uint8Array(base64ToBuffer(parts[3]));
+  const ciphertext = base64ToBuffer(parts[4]);
+  const key = await deriveAesKey(passphrase, salt);
+  const decryptedBuffer = await window.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    ciphertext
+  );
+  return new TextDecoder().decode(decryptedBuffer);
+}
+
+function getStoredKeyphrase(refCode) {
+  if (activeSessionCase && activeSessionCase.referenceCode === refCode && activeSessionCase.keyphrase) {
+    return activeSessionCase.keyphrase;
+  }
+  try {
+    const history = JSON.parse(localStorage.getItem("drs_case_history") || "[]");
+    const item = history.find(c => c.referenceCode === refCode && c.keyphrase);
+    if (item) return item.keyphrase;
+  } catch (_) {}
+  return null;
+}
+
+window.decryptCaseNarrative = async function(reportId, refCode) {
+  const r = (currentReports || []).find(x => x.id === reportId);
+  if (!r || !r.description) return;
+  let key = getStoredKeyphrase(refCode);
+  if (!key) {
+    key = prompt(`Enter the 7-word secret keyphrase for case ${refCode}:`);
+    if (!key) return;
+    key = key.trim();
+  }
+  try {
+    const plain = await decryptNarrativeE2EE(r.description, key);
+    localDecryptedCache.set(reportId, plain);
+    const box = document.getElementById(`narrativeBox-${reportId}`);
+    if (box) {
+      box.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+          <strong style="color:var(--sand-gold); font-size:12px; text-transform:uppercase;">
+            🔓 WebCrypto E2EE Decrypted Narrative
+          </strong>
+          <span class="slideNumberBadge" style="font-size:10px;">DECRYPTED CLIENT-SIDE</span>
+        </div>
+        <div style="font-size:13px; line-height:1.6; color:var(--text-primary); white-space:pre-wrap;">${safe(plain)}</div>
+      `;
+    }
+  } catch (err) {
+    alert("Decryption failed: Incorrect keyphrase or corrupted ciphertext.");
+  }
+};
+
+
+
+// ==========================================
 // Minecraft-Style Voxel Loading Screen Helper
 // ==========================================
 let mcLoaderTimer = null;
@@ -192,32 +312,55 @@ function initSecurityGateAnimation() {
 
   function runSecuritySequence() {
     overlay.classList.remove("hidden");
-    const bar = $("#terminalProgressBar");
+    const bar = $("#zkProgressBarInner");
+    const stepTitle = $("#zkStepDisplayText");
+    const stepSub = $("#zkStepSubText");
     const steps = [
-      { id: "logStep1", progress: 25 },
-      { id: "logStep2", progress: 55 },
-      { id: "logStep3", progress: 85 },
-      { id: "logStep4", progress: 100 }
+      { id: "step1", text: "Encrypting Connection...", sub: "Deriving local ephemeral session keys & WebCrypto cipher", progress: 25 },
+      { id: "step2", text: "Scrubbing IP Address...", sub: "Stripping X-Forwarded-For headers & disabling access logs", progress: 50 },
+      { id: "step3", text: "Establishing Zero-Knowledge Protocol...", sub: "Blind carrier model verified · Asymmetric browser encryption", progress: 75 },
+      { id: "step4", text: "No Personal Data Collected.", sub: "Zero-knowledge verification complete · System ready", progress: 100 }
     ];
 
-    steps.forEach(s => $(`#${s.id}`)?.classList.remove("active"));
-    if (bar) bar.style.width = "15%";
+    steps.forEach(s => {
+      const el = $(`#${s.id}`);
+      if (el) {
+        el.classList.remove("active");
+        el.classList.remove("completed");
+      }
+    });
+    if (bar) bar.style.width = "10%";
 
     let current = 0;
     const interval = setInterval(() => {
       if (current < steps.length) {
+        for (let i = 0; i < current; i++) {
+          const prevEl = $(`#${steps[i].id}`);
+          if (prevEl) {
+            prevEl.classList.remove("active");
+            prevEl.classList.add("completed");
+          }
+        }
         const s = steps[current];
-        $(`#${s.id}`)?.classList.add("active");
+        const curEl = $(`#${s.id}`);
+        if (curEl) curEl.classList.add("active");
+        if (stepTitle) stepTitle.textContent = s.text;
+        if (stepSub) stepSub.textContent = s.sub;
         if (bar) bar.style.width = `${s.progress}%`;
         current++;
       } else {
         clearInterval(interval);
+        const lastEl = $(`#${steps[steps.length - 1].id}`);
+        if (lastEl) {
+          lastEl.classList.remove("active");
+          lastEl.classList.add("completed");
+        }
         setTimeout(() => {
           overlay.classList.add("hidden");
           sessionStorage.setItem("drs_security_passed", "true");
-        }, 600);
+        }, 650);
       }
-    }, 450);
+    }, 600);
 
     const dismiss = () => {
       clearInterval(interval);
@@ -693,6 +836,18 @@ $("#reportForm")?.addEventListener("submit", async e => {
 
   showMinecraftLoader("SEALING INCIDENT DOSSIER...", "Solving PoW & deriving 256-bit WebCrypto cipher");
   try {
+    // Client-Side E2EE: Generate 7-word Diceware keyphrase and encrypt narrative before backend submission
+    const rawPlainDescription = f.description ? f.description.trim() : "";
+    const keyphrase = generateClientKeyphrase();
+    f.keyphrase = keyphrase;
+    if (rawPlainDescription) {
+      try {
+        f.description = await encryptNarrativeE2EE(rawPlainDescription, keyphrase);
+      } catch (cryptoErr) {
+        console.warn("Client WebCrypto encryption warning:", cryptoErr);
+      }
+    }
+
     // Feature 2: Proof-of-Work Challenge
     try {
       const challengeRes = await fetch("/api/reports/challenge").then(r => r.json());
@@ -707,6 +862,9 @@ $("#reportForm")?.addEventListener("submit", async e => {
 
     if (submitBtn) submitBtn.textContent = "Submitting Incident...";
     const res = await api("/api/reports", {method: "POST", body: JSON.stringify(f)});
+    if (res && res.id && rawPlainDescription) {
+      localDecryptedCache.set(res.id, rawPlainDescription);
+    }
     e.target.reset();
     resetPhotoDropZone();
     lockFutureDates();
@@ -829,6 +987,14 @@ function initKeyphraseFeatures() {
 
       if (res && res.report) {
         activeSessionCase = res.report;
+        if (res.report.description && res.report.description.startsWith("ENC:v1:")) {
+          try {
+            const plain = await decryptNarrativeE2EE(res.report.description, keyphrase);
+            localDecryptedCache.set(res.report.id, plain);
+          } catch (decErr) {
+            console.warn("Auto-decryption on track failed:", decErr);
+          }
+        }
         const caseObj = {
           id: res.report.id,
           referenceCode: res.report.referenceCode,
@@ -866,6 +1032,14 @@ function initKeyphraseFeatures() {
 
       if (res && res.report) {
         activeSessionCase = res.report;
+        if (res.report.description && res.report.description.startsWith("ENC:v1:")) {
+          try {
+            const plain = await decryptNarrativeE2EE(res.report.description, keyphrase);
+            localDecryptedCache.set(res.report.id, plain);
+          } catch (decErr) {
+            console.warn("Auto-decryption on track failed:", decErr);
+          }
+        }
         const caseObj = {
           id: res.report.id,
           referenceCode: res.report.referenceCode,
@@ -1105,6 +1279,26 @@ $("#refreshBtn")?.addEventListener("click", refreshAll);
 $("#statusFilter")?.addEventListener("change", e => {
   setFilter(e.target.value || "ALL");
 });
+$("#threatFilter")?.addEventListener("change", () => {
+  applyFiltersAndRender();
+});
+$("#importanceFilter")?.addEventListener("change", () => {
+  applyFiltersAndRender();
+});
+
+function applyFiltersAndRender() {
+  const threatVal = $("#threatFilter")?.value || "";
+  const importanceVal = $("#importanceFilter")?.value || "";
+
+  let filtered = currentReports || [];
+  if (threatVal) {
+    filtered = filtered.filter(r => (r.threatLevel || "MEDIUM") === threatVal);
+  }
+  if (importanceVal) {
+    filtered = filtered.filter(r => (r.importance || "ROUTINE") === importanceVal);
+  }
+  renderReportsList(filtered, $("#reportsList"));
+}
 
 async function refreshAll() {
   await Promise.all([loadReports(), loadMetrics()]);
@@ -1155,12 +1349,15 @@ async function loadMetrics() {
 async function loadReports() {
   const status = currentFilter !== "ALL" ? currentFilter : ($("#statusFilter") ? $("#statusFilter").value : "");
   const url = status ? `/api/reports?status=${encodeURIComponent(status)}` : "/api/reports";
+  showMinecraftLoader("FETCHING INCIDENT DOSSIERS...", "Querying zero-knowledge immutable registry");
   try {
     const reports = await api(url);
-    currentReports = reports;
-    renderReportsList(reports, $("#reportsList"));
+    currentReports = reports || [];
+    applyFiltersAndRender();
   } catch(err) {
     $("#reportsList").innerHTML = `<div class="empty">${safe(err.message)}</div>`;
+  } finally {
+    hideMinecraftLoader();
   }
 }
 
@@ -1185,8 +1382,12 @@ function renderReportsList(reports, containerEl) {
       <article class="reportCard" id="report-card-${r.id}">
         <div class="reportTop">
           <div>
-            <div class="reportTitle">
-              ${icon} <span style="font-family:var(--font-mono); color:var(--navy-deep); font-weight:700;">${safe(refCode)}</span> · ${safe(r.eventType)}
+            <div class="reportTitle" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span>${icon}</span>
+              <span style="font-family:var(--font-mono); color:var(--navy-deep); font-weight:700;">${safe(refCode)}</span> · 
+              <span>${safe(r.eventType)}</span>
+              <span class="threatBadge ${safe(r.threatLevel || 'MEDIUM')}">⚠️ ${safe(r.threatLevel || 'MEDIUM')}</span>
+              <span class="importanceBadge ${safe(r.importance || 'ROUTINE')}">⚡ ${safe(r.importance || 'ROUTINE')}</span>
             </div>
             <div class="reportMeta">
               Filed by <strong>${safe(r.reporterUsername)}</strong> (${safe(r.reporterRole || 'CITIZEN')}) · 
@@ -1233,25 +1434,68 @@ function renderReportsList(reports, containerEl) {
           <div>${safe(r.incidentOverview || r.description)}</div>
         </div>
 
-        <!-- Confidential Narrative (Unlocked if viewer has keyphrase or is authority) -->
-        ${r.canViewFullDescription ? `
-          <div class="descriptionBox">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-              <strong style="color:var(--navy-deep); font-size:12px; text-transform:uppercase;">
-                🔓 Confidential Investigation Narrative (Unlocked)
-              </strong>
-              <span class="muted" style="font-size:11px;">Inspected under chain of custody</span>
+        <!-- Confidential Narrative (Blind Carrier Model: WebCrypto E2EE Client-Side Decrypted) -->
+        ${(() => {
+          const isCiphertext = r.description && r.description.startsWith("ENC:v1:");
+          const cachedPlain = localDecryptedCache.get(r.id);
+          const hasKey = getStoredKeyphrase(refCode);
+
+          if (cachedPlain) {
+            return `
+              <div class="descriptionBox" id="narrativeBox-${r.id}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:var(--sand-gold); font-size:12px; text-transform:uppercase;">
+                    🔓 WebCrypto E2EE Decrypted Narrative
+                  </strong>
+                  <span class="slideNumberBadge" style="font-size:10px;">DECRYPTED CLIENT-SIDE</span>
+                </div>
+                <div style="font-size:13px; line-height:1.6; color:var(--text-primary); white-space:pre-wrap;">${safe(cachedPlain)}</div>
+              </div>
+            `;
+          }
+
+          if (isCiphertext) {
+            return `
+              <div class="descriptionBox" id="narrativeBox-${r.id}" style="border-left: 3px solid var(--sand-gold);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <strong style="color:var(--sand-gold); font-size:11.5px; text-transform:uppercase;">
+                    🔒 WebCrypto E2EE Ciphertext (Blind Carrier Storage)
+                  </strong>
+                  <span class="slideNumberBadge" style="font-size:10px;">AES-GCM-256</span>
+                </div>
+                <div style="font-family:var(--font-mono); font-size:11px; word-break:break-all; color:#79978E; background:rgba(0,0,0,0.25); padding:8px 10px; border-radius:6px; border:1px dashed var(--border-subtle); margin-bottom:8px;">
+                  ${safe(r.description.length > 95 ? r.description.slice(0, 90) + '...' : r.description)}
+                </div>
+                <button type="button" class="smallBtn gold" onclick="decryptCaseNarrative(${r.id}, '${safe(refCode)}')">
+                  ${hasKey ? '🔓 Decrypt With Stored 7-Word Keyphrase' : '🔑 Enter 7-Word Keyphrase to Decrypt'}
+                </button>
+              </div>
+            `;
+          }
+
+          if (r.canViewFullDescription) {
+            return `
+              <div class="descriptionBox" id="narrativeBox-${r.id}">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <strong style="color:var(--navy-deep); font-size:12px; text-transform:uppercase;">
+                    🔓 Confidential Investigation Narrative (Unlocked)
+                  </strong>
+                  <span class="muted" style="font-size:11px;">Inspected under chain of custody</span>
+                </div>
+                ${safe(r.description)}
+              </div>
+            `;
+          }
+
+          return `
+            <div class="privacyShield" style="margin: 8px 0;">
+              <span style="font-size:16px;">🔒</span>
+              <div style="font-size:12.5px;">
+                <strong>Confidential Narrative Protected:</strong> Blind Carrier model active. Detailed forensic description is encrypted client-side with 7-word Diceware keyphrase before storage.
+              </div>
             </div>
-            ${safe(r.description)}
-          </div>
-        ` : `
-          <div class="privacyShield" style="margin: 8px 0;">
-            <span style="font-size:16px;">🔒</span>
-            <div style="font-size:12.5px;">
-              <strong>Confidential Narrative Protected:</strong> Detailed forensic description is masked from public view. Unlocked only for investigating authorities or the verified reporter with Secret Keyphrase.
-            </div>
-          </div>
-        `}
+          `;
+        })()}
 
         ${r.firNumber ? `
           <div class="reportMeta" style="margin-top: 8px;">

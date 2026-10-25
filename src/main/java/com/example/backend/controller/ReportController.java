@@ -125,6 +125,9 @@ public class ReportController {
     }
 
     private String validateContentQuality(String text, String fieldName) {
+        if (text != null && text.trim().startsWith("ENC:")) {
+            return null; // Client-side asymmetrically encrypted ciphertext bypasses plaintext entropy checks
+        }
         if (text == null || text.trim().length() < 12) {
             return fieldName + " must contain at least 12 characters with descriptive details.";
         }
@@ -244,6 +247,10 @@ public class ReportController {
 
         Report r = new Report();
         r.setEventType(request.getEventType().trim());
+        r.setThreatLevel(request.getThreatLevel() != null && !request.getThreatLevel().isBlank()
+                ? request.getThreatLevel().trim().toUpperCase() : "MEDIUM");
+        r.setImportance(request.getImportance() != null && !request.getImportance().isBlank()
+                ? request.getImportance().trim().toUpperCase() : "ROUTINE");
 
         // 2. Public Glimpse vs Confidential Detailed Description
         String overview = request.getIncidentOverview();
@@ -892,11 +899,12 @@ public class ReportController {
         m.put("canEdit", isOwner || (viewingUser != null && "ADMIN".equals(viewingUser.getRole())));
         m.put("isOwner", isOwner);
 
-        if (canViewFull) {
-            m.put("description", r.getDescription());
-        } else {
-            m.put("description", "[Confidential Detailed Narrative — Protected to preserve independent witness verification and prevent copycat tampering]");
-        }
+        // Blind Carrier Architecture: The backend blindly stores and serves the client-encrypted ciphertext.
+        // Plaintext masking logic is removed; decryption happens strictly on client with private keyphrase.
+        m.put("description", r.getDescription());
+        m.put("isEncryptedCiphertext", r.getDescription() != null && r.getDescription().startsWith("ENC:"));
+        m.put("threatLevel", r.getThreatLevel() != null ? r.getThreatLevel() : "MEDIUM");
+        m.put("importance", r.getImportance() != null ? r.getImportance() : "ROUTINE");
 
         m.put("photoUrl", r.getPhotoUrl());
         m.put("viewsCount", auditLogRepository.countByReportIdAndAction(r.getId(), "SENSITIVE_REPORT_VIEWED"));

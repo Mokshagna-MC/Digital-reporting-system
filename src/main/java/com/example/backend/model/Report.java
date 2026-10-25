@@ -56,6 +56,12 @@ public class Report {
     @Column(name = "anonymous_session_token", length = 100)
     private String anonymousSessionToken;
 
+    @Column(name = "threat_level", length = 30)
+    private String threatLevel = "MEDIUM";
+
+    @Column(name = "importance", length = 30)
+    private String importance = "ROUTINE";
+
     @Column(name = "parent_reference_code", length = 50)
     private String parentReferenceCode;
 
@@ -127,4 +133,8 @@ public class Report {
     public void setParentReferenceCode(String parentReferenceCode) { this.parentReferenceCode = parentReferenceCode; }
     public Boolean getDuplicateMerged() { return duplicateMerged != null && duplicateMerged; }
     public void setDuplicateMerged(Boolean duplicateMerged) { this.duplicateMerged = duplicateMerged; }
+    public String getThreatLevel() { return threatLevel != null ? threatLevel : "MEDIUM"; }
+    public void setThreatLevel(String threatLevel) { this.threatLevel = threatLevel; }
+    public String getImportance() { return importance != null ? importance : "ROUTINE"; }
+    public void setImportance(String importance) { this.importance = importance; }
 }
