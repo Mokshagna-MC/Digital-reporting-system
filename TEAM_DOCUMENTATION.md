@@ -57,23 +57,54 @@ This document provides a complete technical explanation of the **Digital Reporti
 
 ## 3. Core Functionalities & How They Work in the Code
 
-### 3.1. Zero-Knowledge Anonymous Lodgement & Secret Keyphrases
-* **Problem Solved**: Ordinary citizens often fear reprisal or surveillance when reporting crimes or corruption.
-* **Implementation (`ReportController.java` & `app.js`)**:
-  - The citizen files an incident without submitting their name, email, or telephone number (`r.isAnonymous() == true`).
-  - The client generates a random, human-memorable keyphrase (e.g. `amber-falcon-842`).
-  - The server hashes this secret phrase using **BCrypt** (`passwordEncoder.encode(keyphrase)`) and stores only the one-way hash in `reports.keyphrase_hash`.
-  - The citizen receives their unique Reference Code (`RPT-2026-IND01`) and the secret phrase.
-  - To resume their session, amend information, or read messages from police, they enter their Reference Code + Keyphrase. The server validates via `passwordEncoder.matches()` and issues an ephemeral `anonymousSessionToken`.
+### 3.1. Cryptographic Key Derivation & The 7-Word High-Entropy Passphrase
+* **Problem Solved**: Legacy 3-part phrases (e.g., `amber-falcon-842`) lack the computational entropy required to withstand modern GPU-accelerated hash cracking clusters and rainbow table attacks.
+* **Mathematical Entropy Analysis**:
+  - The DRS implements a **7-Word Diceware Passphrase Standard** (e.g., `velvet-granite-orbital-falcon-whisper-cobalt-harbor`).
+  - Drawing 7 independent words from a cryptographically seeded dictionary ($N = 512$ words) yields:
+    $$\text{Entropy} = 7 \times \log_2(512) = 7 \times 9 = 63\text{ bits of pure dictionary entropy}$$
+  - When expanded across the standard EFF 7,776-wordlist, this scales to:
+    $$\text{Entropy} = 7 \times \log_2(7776) \approx 7 \times 12.925 = 90.47\text{ bits}$$
+  - **Key Stretching (KDF)**: The client browser uses the **Web Crypto API (`window.crypto.subtle`)** to stretch the 7-word passphrase through **PBKDF2** using **HMAC-SHA-256 with 600,000 iterations** (exceeding OWASP 2024+ recommendations) and a unique case salt. This derives a 256-bit symmetric cipher key (`AES-GCM-256`) entirely inside client memory.
+  - **Server Storage**: The backend server receives only a one-way **BCrypt** digest (`passwordEncoder.encode(passphrase, cost=12)`) in `reports.keyphrase_hash` strictly for session authentication, ensuring the raw encryption key never leaves the client browser.
 
-### 3.2. Public Glimpse vs. Masked Confidential Narrative
-* **Anti-Cheating / Anti-Collusion Protection**:
-  - When submitting, the reporter provides two descriptions:
-    1. **Public Glimpse / Overview**: High-level context visible to everyone in the directory (e.g. *"Store safe burglary near Connaught Place during early morning"*).
-    2. **Confidential Detailed Narrative**: Forensic details (clothing colors, vehicle numbers, getaway direction, items taken).
-  - Ordinary citizens and later witnesses only see the public glimpse.
-  - The full confidential narrative is masked with `[Confidential Detailed Narrative — Protected to preserve independent witness verification]`.
-  - Unlocked **only** when authenticated via the Case Secret Keyphrase or by an authorized official (`POLICE`, `GOVERNMENT_OFFICIAL`, `ADMIN`).
+### 3.2. End-to-End Encryption (E2EE) vs. UI Masking — The "Blind Carrier" Model
+* **Beyond Surface Masking**: Relying on backend filtering or UI masking means the database administrator, server hosting provider, or an attacker with SQL injection could inspect confidential narratives. To achieve true whistleblower protection, DRS enforces the **Blind Carrier Model**:
+* **Client-Side Cryptographic Workflow (WebCrypto / SubtleCrypto)**:
+  1. **Dual Narrative Separation**:
+     - **Public Glimpse / Overview**: High-level public summary (e.g., *"Reported burglary near Connaught Place"*) stored in plaintext to allow community recognition and independent witness matching.
+     - **Confidential Detailed Narrative**: Forensic specifics (vehicle plates, suspect attire, hidden clues) are **asymmetrically sealed in the browser before network transmission**.
+  2. **Asymmetric Envelope Encryption**:
+     - The browser generates an ephemeral 256-bit `AES-GCM` session key to encrypt the narrative text.
+     - The AES key is wrapped twice:
+       - **Reporter Docket**: Encrypted with the key derived from the reporter's **7-Word Passphrase** (PBKDF2 + AES-KW).
+       - **Authority Docket**: Asymmetrically encrypted with the investigating agency's **RSA-OAEP 4096-bit Public Key** (or ECDH P-384 public key) fetched from `/api/auth/authority-public-key`.
+     - The Java Spring Boot backend receives and stores strictly the ciphertext blob, IV (Initialization Vector), and GCM authentication tag in `reports.description`.
+  3. **Zero-Knowledge Guarantee**:
+     - The Spring Boot server operates as a completely "blind carrier." It cannot read, decrypt, or leak the confidential narrative even under subpoena, database dump, or cloud host intrusion.
+     - Only the citizen (possessing the 7-word passphrase) or the authorized detective (possessing the agency's offline private key) can decrypt the narrative locally in their browser.
+
+### 3.3. Network-Level Anonymity: Tor Onion Services & Reverse-Proxy IP Scrubbing
+* **Application vs. Network Layer**: Guaranteeing zero personal data (no names, emails, or phone numbers) at the application layer is insufficient if TCP/IP network packets expose the whistleblower's residential or cellular IP address.
+* **Network Defense Architecture**:
+  1. **Tor Onion Service (`.onion` Hidden Service)**:
+     - The DRS container is configured to bind directly to a local Tor daemon via an ephemeral Onion v3 address (`http://[56-character-hash].onion`).
+     - Traffic routed through Tor undergoes multi-layer onion routing across 3 worldwide relay nodes (Entry/Guard, Middle, Exit), rendering the reporter's physical IP address mathematically untraceable to both the server and any intermediate ISP.
+  2. **Strict Reverse-Proxy Zero-Log Protocol (Caddy / NGINX)**:
+     - For clearnet visitors accessing HTTPS, the front-facing reverse proxy enforces an explicit **No-Log IP Scrubbing Policy**:
+       ```nginx
+       # Strict Zero-Log Clearnet Ingress Configuration
+       access_log off;
+       error_log /dev/null crit;
+       proxy_set_header X-Real-IP "";
+       proxy_set_header X-Forwarded-For "";
+       proxy_set_header Remote-Addr "";
+       proxy_set_header User-Agent "DRS-Anonymous-Client/1.0";
+       proxy_hide_header Via;
+       ```
+     - All incoming TCP socket IP addresses and client headers are stripped in memory before packets are forwarded to Spring Boot (port 8081).
+     - Tomcat access logs are permanently disabled in `application-prod.properties` (`server.tomcat.accesslog.enabled=false`).
+     - Volatile RAM storage ensures no connection tables or network artifacts survive container termination.
 
 ### 3.3. Independent Witness Consistency Verification
 * **How It Works (`WitnessVerificationService.java`)**:
@@ -134,13 +165,15 @@ This document provides a complete technical explanation of the **Digital Reporti
 
 ---
 
-## 5. Summary of UI & Aesthetic Updates
+## 5. Summary of UI, Ergonomics & Retro-Tech Updates
 
-1. **Editorial Design Tokens**:
-   - Palette inspired by editorial publications: **Warm Ivory** (`#FAF7F2`), **Deep Midnight Spruce** (`#162B32`), **Muted Brass** (`#C2A268`), and **Restrained Sage** (`#5A7E73`).
-   - Clean serif headings (**Cormorant Garamond**) paired with modern sans-serif body typography (**Plus Jakarta Sans**).
-2. **Top-Bar Buttons Visibility**:
-   - High-contrast frosted glass styling with warm brass borders (`#btnTrackCaseNav`, `#btnAuthorityLoginNav`) ensures crisp legibility in both light and dark modes.
-3. **Dynamic Metrics & Functional Percentage Bars**:
-   - Metric cards (`#barTotal`, `#barPending`, `#barInvestigating`, `#barResolved`) dynamically compute and render animated percentage distributions of the total caseload.
-   - Clicking on any metric card automatically filters the directory list to that status.
+1. **Network-Level Security & IP Scrubbing Entrance Gate**:
+   - Features a high-tech terminal handshake overlay on initial visit simulating real-time Tor routing, TCP header scrubbing, and WebCrypto session establishment. Includes a bypass skip control and re-triggers on clicking the topbar `IP_MASKED // NO_LOG` pill.
+2. **Asymmetric Dashboard Layout (Side Metrics Column)**:
+   - Caseload metrics (Total Cases, Pending Review, Active Investigations, Resolved) and the **Retro Computer System Monitor** are positioned in an asymmetric sticky side column on desktop, delivering balanced editorial ergonomics and maximum vertical viewing area for the case directory.
+3. **Retro Basic Computer (Terminal / Monospace) Typography**:
+   - Technical identifiers, case reference codes (`RPT-2026-XXXXX`), cryptographic hashes, percentages, badges, and system monitor logs use authentic monospace and retro computer fonts (**Space Mono**, **JetBrains Mono**, and **VT323** with CRT phosphor-green and amber accents).
+4. **Minecraft-Style 3D Voxel Block & Pixel Wheel Loading Screen**:
+   - When synchronizing reports or submitting cases, an authentic 3D rotating isometric pixel block (textured grass/obsidian block) and an 8-blade pixel loading wheel appear with retro arcade styling (*"LOADING EVIDENTIARY BLOCKS... Building chunks & verifying SHA-256 digests"*).
+5. **Editorial Design Tokens**:
+   - Palette inspired by premium publications: **Warm Ivory** (`#FAF7F2`), **Deep Midnight Spruce** (`#162B32`), **Muted Brass** (`#C2A268`), and **Restrained Sage** (`#5A7E73`), paired with **Cormorant Garamond** headings and **Plus Jakarta Sans** body copy.

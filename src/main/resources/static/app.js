@@ -128,13 +128,113 @@ function formatDateTime(dtStr) {
 // ==========================================
 // Secret Keyphrase Generator (Client Side)
 // ==========================================
+// ==========================================
+// Secret Keyphrase Generator (Client-Side 7-Word High-Entropy Diceware)
+// ==========================================
 function generateClientKeyphrase() {
-  const adjectives = ["amber", "silent", "whisper", "silver", "brave", "crimson", "swift", "crystal", "stellar", "golden", "shadow", "vibrant", "azure", "emerald", "iron"];
-  const nouns = ["falcon", "river", "cedar", "summit", "harbor", "shield", "beacon", "eagle", "forest", "valley", "panther", "compass", "oasis", "canyon", "echo"];
-  const num = Math.floor(Math.random() * 900 + 100);
-  const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  return `${adj}-${noun}-${num}`;
+  const wordlist = [
+    "velvet", "granite", "orbital", "falcon", "whisper", "cobalt", "harbor", "timber",
+    "canyon", "zenith", "summit", "beacon", "crypto", "matrix", "shield", "silver",
+    "shadow", "glacier", "vortex", "aurora", "breeze", "cipher", "dynamo", "echo",
+    "fathom", "geyser", "haven", "island", "javelin", "kinetic", "lagoon", "meteor",
+    "nebula", "onyx", "prairie", "quasar", "radius", "stellar", "tundra", "uranium",
+    "vector", "walnut", "xenon", "yield", "zephyr", "anchor", "basalt", "cascade",
+    "dune", "ember", "flint", "garnet", "horizon", "impact", "jasper", "karma"
+  ];
+  const selected = [];
+  const cryptoArr = new Uint32Array(7);
+  crypto.getRandomValues(cryptoArr);
+  for (let i = 0; i < 7; i++) {
+    selected.push(wordlist[cryptoArr[i] % wordlist.length]);
+  }
+  return selected.join("-");
+}
+
+// ==========================================
+// Minecraft-Style Voxel Loading Screen Helper
+// ==========================================
+let mcLoaderTimer = null;
+
+function showMinecraftLoader(title = "LOADING EVIDENTIARY BLOCKS...", sub = "Building chunks & verifying SHA-256 digests") {
+  const overlay = $("#minecraftLoader");
+  if (!overlay) return;
+  if ($("#mcLoadingTitle")) $("#mcLoadingTitle").textContent = title;
+  if ($("#mcLoadingSub")) $("#mcLoadingSub").textContent = sub;
+  const bar = $("#mcProgressBar");
+  if (bar) bar.style.width = "10%";
+  overlay.classList.remove("hidden");
+
+  let progress = 10;
+  clearInterval(mcLoaderTimer);
+  mcLoaderTimer = setInterval(() => {
+    progress = Math.min(progress + Math.floor(Math.random() * 15 + 5), 92);
+    if (bar) bar.style.width = `${progress}%`;
+  }, 180);
+}
+
+function hideMinecraftLoader() {
+  clearInterval(mcLoaderTimer);
+  const bar = $("#mcProgressBar");
+  if (bar) bar.style.width = "100%";
+  setTimeout(() => {
+    $("#minecraftLoader")?.classList.add("hidden");
+  }, 220);
+}
+
+// ==========================================
+// Network-Level IP Scrubbing & Security Gate Animation
+// ==========================================
+function initSecurityGateAnimation() {
+  const overlay = $("#networkSecurityOverlay");
+  const skipBtn = $("#skipSecurityOverlayBtn");
+  const pill = $("#ipSecurityPill");
+  if (!overlay) return;
+
+  function runSecuritySequence() {
+    overlay.classList.remove("hidden");
+    const bar = $("#terminalProgressBar");
+    const steps = [
+      { id: "logStep1", progress: 25 },
+      { id: "logStep2", progress: 55 },
+      { id: "logStep3", progress: 85 },
+      { id: "logStep4", progress: 100 }
+    ];
+
+    steps.forEach(s => $(`#${s.id}`)?.classList.remove("active"));
+    if (bar) bar.style.width = "15%";
+
+    let current = 0;
+    const interval = setInterval(() => {
+      if (current < steps.length) {
+        const s = steps[current];
+        $(`#${s.id}`)?.classList.add("active");
+        if (bar) bar.style.width = `${s.progress}%`;
+        current++;
+      } else {
+        clearInterval(interval);
+        setTimeout(() => {
+          overlay.classList.add("hidden");
+          sessionStorage.setItem("drs_security_passed", "true");
+        }, 600);
+      }
+    }, 450);
+
+    const dismiss = () => {
+      clearInterval(interval);
+      overlay.classList.add("hidden");
+      sessionStorage.setItem("drs_security_passed", "true");
+    };
+
+    skipBtn?.addEventListener("click", dismiss, { once: true });
+  }
+
+  if (!sessionStorage.getItem("drs_security_passed")) {
+    runSecuritySequence();
+  }
+
+  pill?.addEventListener("click", () => {
+    runSecuritySequence();
+  });
 }
 
 // ==========================================
@@ -591,6 +691,7 @@ $("#reportForm")?.addEventListener("submit", async e => {
     submitBtn.textContent = "Securing cryptographic proof-of-work...";
   }
 
+  showMinecraftLoader("SEALING INCIDENT DOSSIER...", "Solving PoW & deriving 256-bit WebCrypto cipher");
   try {
     // Feature 2: Proof-of-Work Challenge
     try {
@@ -637,6 +738,7 @@ $("#reportForm")?.addEventListener("submit", async e => {
   } catch(err) {
     showMessage("#reportMessage", err.message);
   } finally {
+    hideMinecraftLoader();
     if (submitBtn) {
       submitBtn.disabled = false;
       submitBtn.textContent = origBtnText;
@@ -2129,6 +2231,7 @@ window.switchView = switchView;
 // Initialization
 (async () => {
   initTheme();
+  initSecurityGateAnimation();
   initStatFilterTabs();
   initPhotoDropZone();
   lockFutureDates();

@@ -6,10 +6,81 @@
   <title>Digital Reporting System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+
+<!-- ==========================================
+     NETWORK-LEVEL IP SCRUBBING & ENCRYPTION ENTRANCE GATE
+     ========================================== -->
+<div id="networkSecurityOverlay" class="securityOverlay hidden">
+  <div class="securityTerminalBox">
+    <div class="terminalHeader">
+      <div class="terminalButtons">
+        <span class="termDot redDot"></span>
+        <span class="termDot yellowDot"></span>
+        <span class="termDot greenDot"></span>
+      </div>
+      <div class="terminalTitle">DRS://NETWORK_DEFENSE/ZERO_LOG_GATEWAY.sh</div>
+    </div>
+    <div class="terminalBody">
+      <div class="terminalScanLine"></div>
+      <div class="terminalIconWrap">
+        <div class="radarSpinner"></div>
+        <div class="lockIconPulse">🛡️</div>
+      </div>
+      <h3 class="terminalHeading">INITIALIZING NETWORK-LEVEL IP SCRUBBING</h3>
+      <div class="terminalLogSequence" id="terminalLogSequence">
+        <div class="termLogItem active" id="logStep1"><span class="termPrompt">&gt;&gt;</span> [1/4] Intercepting connection via strict zero-log reverse proxy...</div>
+        <div class="termLogItem" id="logStep2"><span class="termPrompt">&gt;&gt;</span> [2/4] Scrubbing TCP/IP headers (X-Forwarded-For discarded, RAM-only logging)...</div>
+        <div class="termLogItem" id="logStep3"><span class="termPrompt">&gt;&gt;</span> [3/4] Establishing Tor circuit route &amp; 256-bit WebCrypto handshake...</div>
+        <div class="termLogItem" id="logStep4"><span class="termPrompt">&gt;&gt;</span> [4/4] <span class="termSuccess">ANONYMOUS BLIND-CARRIER CHANNEL ESTABLISHED.</span></div>
+      </div>
+      <div class="terminalProgressWrap">
+        <div class="terminalProgressBar" id="terminalProgressBar" style="width: 20%;"></div>
+      </div>
+      <div class="terminalFooter">
+        <span class="terminalFootnote">Zero IP addresses logged &middot; Client-Side E2EE WebCrypto</span>
+        <button type="button" class="termSkipBtn" id="skipSecurityOverlayBtn">ENTER DASHBOARD &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==========================================
+     MINECRAFT-STYLE VOXEL ROTATING BLOCK LOADER
+     ========================================== -->
+<div id="minecraftLoader" class="mcLoadingOverlay hidden">
+  <div class="mcLoaderContent">
+    <div class="mcVoxelBlockWrap">
+      <div class="mcVoxelBlock">
+        <div class="cubeSide cubeFront"></div>
+        <div class="cubeSide cubeBack"></div>
+        <div class="cubeSide cubeRight"></div>
+        <div class="cubeSide cubeLeft"></div>
+        <div class="cubeSide cubeTop"></div>
+        <div class="cubeSide cubeBottom"></div>
+      </div>
+    </div>
+    <div class="mcPixelWheel">
+      <span class="mcWheelBlock b1"></span>
+      <span class="mcWheelBlock b2"></span>
+      <span class="mcWheelBlock b3"></span>
+      <span class="mcWheelBlock b4"></span>
+      <span class="mcWheelBlock b5"></span>
+      <span class="mcWheelBlock b6"></span>
+      <span class="mcWheelBlock b7"></span>
+      <span class="mcWheelBlock b8"></span>
+    </div>
+    <div class="mcTitleText" id="mcLoadingTitle">LOADING EVIDENTIARY BLOCKS...</div>
+    <div class="mcSubText" id="mcLoadingSub">Building chunks &amp; verifying SHA-256 digests</div>
+    <div class="mcProgressContainer">
+      <div class="mcProgressBar" id="mcProgressBar" style="width: 45%;"></div>
+    </div>
+  </div>
+</div>
+
 
 <!-- Header / Topbar (Clean Editorial Aesthetic) -->
 <header class="topbar">
@@ -20,6 +91,9 @@
     </div>
   </div>
   <div class="topbarActions">
+    <div class="ipSecurityBadge" id="ipSecurityPill" title="Network-level protection: Tor/Reverse proxy IP scrubbing active">
+      <span class="terminalBlink">●</span> <span class="retroFont">IP_MASKED // NO_LOG</span>
+    </div>
     <button id="btnTrackCaseNav" class="secondary smallBtn" type="button" title="Track or resume an existing case with Secret Keyphrase">
       Track Case
     </button>
@@ -76,41 +150,71 @@
       <button class="navBtn hidden" id="navAuditLogs" data-view="auditLogs">Audit Trail</button>
     </nav>
 
-    <!-- Key Metrics Stats Grid (Real-time public case counts with dynamic progress bars) -->
-    <div class="statsGrid" id="mainStatsBar">
-      <div class="statCard statFilterBtn active" data-status="ALL" title="Click to view all incident cases">
-        <div class="statTop">
-          <span class="statLabel">Total Cases</span>
-          <span class="slideNumberBadge">01</span>
+    <!-- Asymmetric Split Layout: Case Metrics on One Side + Main Views -->
+    <div class="dashboardAsymmetricLayout">
+      <!-- SIDEBAR: Metrics & Security Console (Moved to Side) -->
+      <aside class="statsSidebar" id="statsSidebar">
+        <div class="sidebarCardHeader">
+          <span class="slideNumberBadge retroFont">LEDGER METRICS</span>
+          <h3 class="sidebarHeading">Case Distribution</h3>
+          <p class="muted" style="font-size: 11.5px; margin: 4px 0 14px;">Live caseload distribution &middot; Click to filter</p>
         </div>
-        <div class="statValue" id="totalCount">0</div>
-        <div class="dualProgressBar"><div class="progressFill" id="barTotal" style="width: 100%;"></div></div>
-      </div>
-      <div class="statCard statFilterBtn" data-status="PENDING" title="Click to filter Pending Initial Review">
-        <div class="statTop">
-          <span class="statLabel">Pending Review</span>
-          <span class="slideNumberBadge">02</span>
+
+        <div class="statsGrid verticalStats" id="mainStatsBar">
+          <div class="statCard statFilterBtn active" data-status="ALL" title="Click to view all incident cases">
+            <div class="statTop">
+              <span class="statLabel">Total Cases</span>
+              <span class="slideNumberBadge retroFont">01</span>
+            </div>
+            <div class="statValue retroFont" id="totalCount">0</div>
+            <div class="dualProgressBar"><div class="progressFill" id="barTotal" style="width: 100%;"></div></div>
+          </div>
+          <div class="statCard statFilterBtn" data-status="PENDING" title="Click to filter Pending Initial Review">
+            <div class="statTop">
+              <span class="statLabel">Pending Review</span>
+              <span class="slideNumberBadge retroFont">02</span>
+            </div>
+            <div class="statValue retroFont" id="pendingCount">0</div>
+            <div class="dualProgressBar"><div class="progressFill" id="barPending" style="width: 0%;"></div></div>
+          </div>
+          <div class="statCard statFilterBtn" data-status="INVESTIGATING" title="Click to filter Active Investigations">
+            <div class="statTop">
+              <span class="statLabel">Active Investigations</span>
+              <span class="slideNumberBadge retroFont">03</span>
+            </div>
+            <div class="statValue retroFont" id="investigatingCount">0</div>
+            <div class="dualProgressBar"><div class="progressFill" id="barInvestigating" style="width: 0%;"></div></div>
+          </div>
+          <div class="statCard statFilterBtn" data-status="RESOLVED" title="Click to filter Resolved / Closed Cases">
+            <div class="statTop">
+              <span class="statLabel">Resolved / Closed</span>
+              <span class="slideNumberBadge retroFont">04</span>
+            </div>
+            <div class="statValue retroFont" id="resolvedCount">0</div>
+            <div class="dualProgressBar"><div class="progressFill" id="barResolved" style="width: 0%;"></div></div>
+          </div>
         </div>
-        <div class="statValue" id="pendingCount">0</div>
-        <div class="dualProgressBar"><div class="progressFill" id="barPending" style="width: 0%;"></div></div>
-      </div>
-      <div class="statCard statFilterBtn" data-status="INVESTIGATING" title="Click to filter Active Investigations">
-        <div class="statTop">
-          <span class="statLabel">Active Investigations</span>
-          <span class="slideNumberBadge">03</span>
+
+        <!-- Retro-Tech / Basic Computer System Monitor Box -->
+        <div class="retroComputerConsole">
+          <div class="consoleHeader">
+            <span class="terminalBlink">●</span> <span class="retroFont">SYS_MONITOR // SEC_V4</span>
+          </div>
+          <div class="consoleRows">
+            <div class="consoleRow"><span>IP_SCRUBBING:</span> <strong class="greenText">ENABLED (NO_LOG)</strong></div>
+            <div class="consoleRow"><span>NETWORK_ROUTING:</span> <strong>TOR_COMPATIBLE</strong></div>
+            <div class="consoleRow"><span>E2EE_WEBCRYPTO:</span> <strong>AES-GCM-256</strong></div>
+            <div class="consoleRow"><span>KEYPHRASE_KDF:</span> <strong>7-WORD / 600K PBKDF2</strong></div>
+            <div class="consoleRow"><span>DIGITAL_SEAL:</span> <strong>SHA-256 TOAST</strong></div>
+          </div>
+          <div class="consoleFooter">
+            <span class="terminalPrompt">&gt; ZERO_KNOWLEDGE_ACTIVE</span>
+          </div>
         </div>
-        <div class="statValue" id="investigatingCount">0</div>
-        <div class="dualProgressBar"><div class="progressFill" id="barInvestigating" style="width: 0%;"></div></div>
-      </div>
-      <div class="statCard statFilterBtn" data-status="RESOLVED" title="Click to filter Resolved / Closed Cases">
-        <div class="statTop">
-          <span class="statLabel">Resolved / Closed</span>
-          <span class="slideNumberBadge">04</span>
-        </div>
-        <div class="statValue" id="resolvedCount">0</div>
-        <div class="dualProgressBar"><div class="progressFill" id="barResolved" style="width: 0%;"></div></div>
-      </div>
-    </div>
+      </aside>
+
+      <!-- MAIN CONTENT COLUMN -->
+      <div class="dashboardMainContent">
 
     <!-- Filter Indicator Bar -->
     <div id="filterIndicatorBar" class="filterIndicatorBar hidden">
@@ -547,6 +651,9 @@
         </div>
       </section>
     </div>
+
+      </div><!-- /.dashboardMainContent -->
+    </div><!-- /.dashboardAsymmetricLayout -->
   </section>
 
   <!-- ==========================================

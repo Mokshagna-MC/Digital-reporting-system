@@ -828,12 +828,21 @@ public class ReportController {
     }
 
     private String generateMemorableKeyphrase() {
-        String[] adjectives = {"amber", "silent", "whisper", "silver", "brave", "crimson", "swift", "crystal", "stellar", "golden", "shadow", "vibrant", "azure"};
-        String[] nouns = {"falcon", "river", "cedar", "summit", "harbor", "shield", "beacon", "eagle", "forest", "valley", "panther", "compass", "oasis"};
-        int num = (int)(Math.random() * 900 + 100);
-        int adjIdx = (int)(Math.random() * adjectives.length);
-        int nounIdx = (int)(Math.random() * nouns.length);
-        return adjectives[adjIdx] + "-" + nouns[nounIdx] + "-" + num;
+        String[] wordlist = {
+                "velvet", "granite", "orbital", "falcon", "whisper", "cobalt", "harbor", "timber",
+                "canyon", "zenith", "summit", "beacon", "crypto", "matrix", "shield", "silver",
+                "shadow", "glacier", "vortex", "aurora", "breeze", "cipher", "dynamo", "echo",
+                "fathom", "geyser", "haven", "island", "javelin", "kinetic", "lagoon", "meteor",
+                "nebula", "onyx", "prairie", "quasar", "radius", "stellar", "tundra", "uranium",
+                "vector", "walnut", "xenon", "yield", "zephyr", "anchor", "basalt", "cascade",
+                "dune", "ember", "flint", "garnet", "horizon", "impact", "jasper", "karma"
+        };
+        java.security.SecureRandom rng = new java.security.SecureRandom();
+        List<String> words = new ArrayList<>(7);
+        for (int i = 0; i < 7; i++) {
+            words.add(wordlist[rng.nextInt(wordlist.length)]);
+        }
+        return String.join("-", words);
     }
 
     private User currentUser(HttpSession session) {

@@ -1469,3 +1469,584 @@ tr:hover td {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* =============================================================================
+   RETRO COMPUTER & TERMINAL TYPOGRAPHY TOKENS
+   ============================================================================= */
+.retroFont, .terminalText {
+  font-family: 'Space Mono', 'JetBrains Mono', monospace !important;
+  letter-spacing: -0.02em;
+}
+
+.pixelFont {
+  font-family: 'VT323', monospace !important;
+  letter-spacing: 0.05em;
+  font-size: 1.15rem;
+}
+
+.ipSecurityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(43, 107, 85, 0.15);
+  border: 1px solid rgba(78, 173, 138, 0.4);
+  color: #4EAD8A;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="dark"] .ipSecurityBadge {
+  background: rgba(78, 173, 138, 0.12);
+  border-color: rgba(78, 173, 138, 0.5);
+  color: #6CE8BA;
+}
+
+.terminalBlink {
+  color: #4EAD8A;
+  animation: blinkPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes blinkPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+/* Smooth Entrance Animation for Main App Panel */
+#appPanel {
+  animation: appFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes appFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =============================================================================
+   ASYMMETRIC SPLIT LAYOUT: METRICS SIDEBAR ON ONE SIDE
+   ============================================================================= */
+.dashboardAsymmetricLayout {
+  display: grid;
+  grid-template-columns: 290px 1fr;
+  gap: 28px;
+  align-items: flex-start;
+  margin-top: 18px;
+}
+
+.statsSidebar {
+  position: sticky;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebarCardHeader {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px 18px 12px;
+  box-shadow: var(--shadow-sm);
+}
+
+.sidebarHeading {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--text-primary);
+  margin: 6px 0 0;
+  font-weight: 600;
+}
+
+.statsGrid.verticalStats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 0;
+  grid-template-columns: 1fr;
+}
+
+.statsGrid.verticalStats .statCard {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.statsGrid.verticalStats .statValue {
+  font-size: 1.85rem;
+  margin: 6px 0 10px;
+}
+
+.dashboardMainContent {
+  min-width: 0; /* Prevents overflow in grid */
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Retro-Tech Computer System Monitor */
+.retroComputerConsole {
+  background: #0E1A1E;
+  border: 1px solid #1D353D;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  color: #A3C2B8;
+  font-family: 'Space Mono', 'JetBrains Mono', monospace;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.consoleHeader {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4EAD8A;
+  border-bottom: 1px solid #1D353D;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.consoleRows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10.5px;
+}
+
+.consoleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.consoleRow span {
+  color: #6B8B82;
+}
+
+.consoleRow strong {
+  color: #E2ECE8;
+}
+
+.consoleRow .greenText {
+  color: #4EAD8A;
+}
+
+.consoleFooter {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed #1D353D;
+  font-size: 10px;
+  color: #C2A268;
+}
+
+/* Responsive Split Layout */
+@media (max-width: 980px) {
+  .dashboardAsymmetricLayout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .statsSidebar {
+    position: static;
+  }
+  .statsGrid.verticalStats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .statsGrid.verticalStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =============================================================================
+   NETWORK ENCRYPTION & IP SCRUBBING ENTRANCE OVERLAY
+   ============================================================================= */
+.securityOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(10, 18, 22, 0.94);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.securityOverlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.securityTerminalBox {
+  width: 100%;
+  max-width: 620px;
+  background: #0B161A;
+  border: 1px solid #1E373F;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(194, 162, 104, 0.15);
+  font-family: 'Space Mono', 'JetBrains Mono', monospace;
+  animation: modalScaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.terminalHeader {
+  background: #112228;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #1E373F;
+  gap: 12px;
+}
+
+.terminalButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.termDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.redDot { background: #FF5F56; }
+.yellowDot { background: #FFBD2E; }
+.greenDot { background: #27C93F; }
+
+.terminalTitle {
+  font-size: 11px;
+  color: #8CA89F;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+
+.terminalBody {
+  padding: 26px 28px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.terminalScanLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(78, 173, 138, 0.4);
+  animation: scanLine 3s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanLine {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.terminalIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 18px;
+  height: 64px;
+}
+
+.radarSpinner {
+  width: 60px;
+  height: 60px;
+  border: 2px solid rgba(78, 173, 138, 0.25);
+  border-top-color: #4EAD8A;
+  border-radius: 50%;
+  animation: radarSpin 1.4s linear infinite;
+}
+
+@keyframes radarSpin {
+  to { transform: rotate(360deg); }
+}
+
+.lockIconPulse {
+  position: absolute;
+  font-size: 26px;
+  animation: pulseLock 2s infinite ease-in-out;
+}
+
+@keyframes pulseLock {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.terminalHeading {
+  font-size: 14px;
+  color: #E2ECE8;
+  margin: 0 0 16px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  font-weight: 700;
+}
+
+.terminalLogSequence {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+  color: #92B2A8;
+  margin-bottom: 22px;
+}
+
+.termLogItem {
+  opacity: 0.4;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.termLogItem.active {
+  opacity: 1;
+  color: #E2ECE8;
+}
+
+.termPrompt {
+  color: #4EAD8A;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.termSuccess {
+  color: #4EAD8A;
+  font-weight: 700;
+}
+
+.terminalProgressWrap {
+  height: 6px;
+  background: #112228;
+  border: 1px solid #1E373F;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.terminalProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #4EAD8A, #C2A268);
+  transition: width 0.4s ease;
+}
+
+.terminalFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #1E373F;
+}
+
+.terminalFootnote {
+  font-size: 11px;
+  color: #6C8A81;
+}
+
+.termSkipBtn {
+  background: #19333B;
+  color: #C2A268;
+  border: 1px solid #C2A268;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.termSkipBtn:hover {
+  background: #C2A268;
+  color: #0B161A;
+}
+
+/* =============================================================================
+   MINECRAFT-STYLE VOXEL ROTATING BLOCK & PIXEL WHEEL LOADER
+   ============================================================================= */
+.mcLoadingOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99998;
+  background: rgba(18, 22, 20, 0.92);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.mcLoadingOverlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mcLoaderContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #1C1E1D;
+  border: 3px solid #3C423E;
+  box-shadow: inset -3px -3px 0 #111312, inset 3px 3px 0 #5E6660, 0 12px 36px rgba(0,0,0,0.7);
+  padding: 34px 44px;
+  max-width: 440px;
+  width: 100%;
+}
+
+/* 3D Isometric Voxel Cube */
+.mcVoxelBlockWrap {
+  width: 72px;
+  height: 72px;
+  margin-bottom: 24px;
+  perspective: 400px;
+}
+
+.mcVoxelBlock {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  animation: mcSpinVoxel 3s linear infinite;
+}
+
+@keyframes mcSpinVoxel {
+  0% { transform: rotateX(-28deg) rotateY(0deg); }
+  100% { transform: rotateX(-28deg) rotateY(360deg); }
+}
+
+.cubeSide {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  border: 2px solid #2B332E;
+  image-rendering: pixelated;
+}
+
+/* Grass/Obsidian Voxel Block Faces */
+.cubeTop {
+  transform: rotateX(90deg) translateZ(36px);
+  background: #5B8A3C; /* Minecraft grass green */
+  box-shadow: inset 0 0 0 4px #496E30;
+}
+
+.cubeBottom {
+  transform: rotateX(-90deg) translateZ(36px);
+  background: #866043; /* Minecraft dirt */
+  box-shadow: inset 0 0 0 4px #654730;
+}
+
+.cubeFront {
+  transform: rotateY(0deg) translateZ(36px);
+  background: linear-gradient(to bottom, #5B8A3C 0%, #5B8A3C 28%, #866043 28%, #866043 100%);
+  border-top: 4px solid #73AE4C;
+}
+
+.cubeBack {
+  transform: rotateY(180deg) translateZ(36px);
+  background: linear-gradient(to bottom, #5B8A3C 0%, #5B8A3C 28%, #866043 28%, #866043 100%);
+}
+
+.cubeRight {
+  transform: rotateY(90deg) translateZ(36px);
+  background: linear-gradient(to bottom, #496E30 0%, #496E30 28%, #654730 28%, #654730 100%);
+}
+
+.cubeLeft {
+  transform: rotateY(-90deg) translateZ(36px);
+  background: linear-gradient(to bottom, #496E30 0%, #496E30 28%, #654730 28%, #654730 100%);
+}
+
+/* Minecraft Pixel Wheel Spinner */
+.mcPixelWheel {
+  width: 44px;
+  height: 44px;
+  position: relative;
+  margin-bottom: 20px;
+  animation: mcSpinWheel 1.2s steps(8) infinite;
+}
+
+@keyframes mcSpinWheel {
+  to { transform: rotate(360deg); }
+}
+
+.mcWheelBlock {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #E0E0E0;
+  border: 1px solid #000;
+}
+
+.mcWheelBlock.b1 { top: 0; left: 18px; opacity: 1; background: #C2A268; }
+.mcWheelBlock.b2 { top: 5px; right: 5px; opacity: 0.88; }
+.mcWheelBlock.b3 { top: 18px; right: 0; opacity: 0.75; }
+.mcWheelBlock.b4 { bottom: 5px; right: 5px; opacity: 0.62; }
+.mcWheelBlock.b5 { bottom: 0; left: 18px; opacity: 0.5; }
+.mcWheelBlock.b6 { bottom: 5px; left: 5px; opacity: 0.38; }
+.mcWheelBlock.b7 { top: 18px; left: 0; opacity: 0.25; }
+.mcWheelBlock.b8 { top: 5px; left: 5px; opacity: 0.15; }
+
+.mcTitleText {
+  font-family: 'VT323', 'Space Mono', monospace;
+  font-size: 1.55rem;
+  color: #FFFFFF;
+  letter-spacing: 0.06em;
+  text-shadow: 2px 2px 0 #000000;
+  margin-bottom: 4px;
+}
+
+.mcSubText {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: #A0A8A4;
+  margin-bottom: 18px;
+}
+
+.mcProgressContainer {
+  width: 100%;
+  height: 14px;
+  background: #111312;
+  border: 2px solid #5E6660;
+  box-shadow: inset 1px 1px 0 #000;
+  padding: 2px;
+}
+
+.mcProgressBar {
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    #5B8A3C,
+    #5B8A3C 8px,
+    #73AE4C 8px,
+    #73AE4C 16px
+  );
+  animation: mcProgressStripes 1s linear infinite;
+  transition: width 0.3s ease;
+}
+
+@keyframes mcProgressStripes {
+  from { background-position: 0 0; }
+  to { background-position: 16px 0; }
+}
