@@ -2584,7 +2584,14 @@ function closeWalkthrough() {
   localStorage.setItem("drs_tour_completed", "true");
 }
 
-function walkthroughNext() {
+let isTourNavigating = false;
+
+function walkthroughNext(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  if (isTourNavigating) return;
+  isTourNavigating = true;
+  setTimeout(() => { isTourNavigating = false; }, 250);
+
   if (currentTourStep < TOUR_STEPS.length - 1) {
     currentTourStep++;
     renderTourStep();
@@ -2593,7 +2600,12 @@ function walkthroughNext() {
   }
 }
 
-function walkthroughPrev() {
+function walkthroughPrev(e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+  if (isTourNavigating) return;
+  isTourNavigating = true;
+  setTimeout(() => { isTourNavigating = false; }, 250);
+
   if (currentTourStep > 0) {
     currentTourStep--;
     renderTourStep();
@@ -2687,8 +2699,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#startTourBtn")?.addEventListener("click", startWalkthrough);
   $("#declineTourBtn")?.addEventListener("click", closeWalkthrough);
   $("#wtSkipBtn")?.addEventListener("click", closeWalkthrough);
-  $("#wtPrevBtn")?.addEventListener("click", walkthroughPrev);
-  $("#wtNextBtn")?.addEventListener("click", walkthroughNext);
+
   $("#btnGuidedTourNav")?.addEventListener("click", startWalkthrough);
 });
 
