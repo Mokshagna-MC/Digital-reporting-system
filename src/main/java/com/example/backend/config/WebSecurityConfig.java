@@ -21,3 +21,4 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .maxAge(3600);
     }
 }
+

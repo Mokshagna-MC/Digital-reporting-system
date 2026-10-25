@@ -1897,9 +1897,10 @@ tr:hover td {
 }
 
 .mcLoadingOverlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .mcLoaderContent {
@@ -2655,4 +2656,104 @@ tr:hover td {
   justify-content: space-between;
   align-items: center;
   gap: 8px;
+}
+
+/* =============================================================================
+   ENHANCED WALKTHROUGH OVERLAY & SCROLL LOCK
+   ============================================================================= */
+body.tourActive {
+  overflow: hidden !important;
+  height: 100vh !important;
+  touch-action: none !important;
+}
+
+.walkthroughOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  pointer-events: auto;
+  transition: opacity 0.25s ease;
+}
+
+.walkthroughOverlay.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.walkthroughSpotlight {
+  position: fixed;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(8, 14, 17, 0.86), 0 0 24px rgba(194, 162, 104, 0.9);
+  border: 2px solid var(--sand-gold);
+  transition: all 0.25s ease;
+  pointer-events: none;
+  z-index: 100001;
+}
+
+.walkthroughTooltip {
+  position: fixed;
+  width: 380px;
+  max-width: calc(100vw - 32px);
+  background: #0B161A;
+  border: 1px solid var(--sand-gold);
+  border-radius: 10px;
+  padding: 18px 22px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(194, 162, 104, 0.35);
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  z-index: 100002;
+  pointer-events: auto !important;
+  transition: top 0.25s ease, left 0.25s ease;
+}
+
+.walkthroughCloseIcon {
+  background: transparent;
+  border: none;
+  color: #79978E;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.2s ease;
+}
+
+.walkthroughCloseIcon:hover {
+  color: #FF5F56;
+}
+
+.walkthroughStepBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sand-gold);
+  background: rgba(194, 162, 104, 0.15);
+  border: 1px solid var(--sand-gold);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.walkthroughTitle {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 6px 0 8px;
+}
+
+.walkthroughDesc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #A5C2B9;
+  margin-bottom: 16px;
+}
+
+.walkthroughControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.walkthroughControls button {
+  cursor: pointer;
+  pointer-events: auto !important;
 }

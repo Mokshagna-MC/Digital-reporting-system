@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=3.0">
+  <link rel="stylesheet" href="/styles.css?v=3.2">
 </head>
 <body>
 
@@ -83,23 +83,6 @@
     </div>
   </div>
 </div>
-    <div class="mcPixelWheel">
-      <span class="mcWheelBlock b1"></span>
-      <span class="mcWheelBlock b2"></span>
-      <span class="mcWheelBlock b3"></span>
-      <span class="mcWheelBlock b4"></span>
-      <span class="mcWheelBlock b5"></span>
-      <span class="mcWheelBlock b6"></span>
-      <span class="mcWheelBlock b7"></span>
-      <span class="mcWheelBlock b8"></span>
-    </div>
-    <div class="mcTitleText" id="mcLoadingTitle">LOADING EVIDENTIARY BLOCKS...</div>
-    <div class="mcSubText" id="mcLoadingSub">Building chunks &amp; verifying SHA-256 digests</div>
-    <div class="mcProgressContainer">
-      <div class="mcProgressBar" id="mcProgressBar" style="width: 45%;"></div>
-    </div>
-  </div>
-</div>
 
 
 <!-- Header / Topbar (Clean Editorial Aesthetic) -->
@@ -111,7 +94,7 @@
     </div>
   </div>
   <div class="topbarActions">
-    <button id="btnGuidedTourNav" class="secondary smallBtn" type="button" title="Interactive UI Walkthrough">💡 Guided Tour</button>
+    <button id="btnGuidedTourNav" class="secondary smallBtn" type="button" title="Interactive UI Walkthrough" onclick="startWalkthrough()">💡 Guided Tour</button>
     <div class="ipSecurityBadge" id="ipSecurityPill" title="Network-level protection: Tor/Reverse proxy IP scrubbing active">
       <span class="terminalBlink">●</span> <span class="retroFont">IP_SCRUBBED // NO_LOG</span>
     </div>
@@ -1344,7 +1327,11 @@
   </footer>
 </main>
 
-<script src="/app.js?v=3.0"></script>
+
+
+
+
+
 
 <!-- ==========================================
      FIRST-TIME VISITOR ONBOARDING MODAL & INTERACTIVE WALKTHROUGH
@@ -1356,12 +1343,12 @@
       <span class="slideNumberBadge retroFont">ORIENTATION GUIDE</span>
       <h3 style="font-size: 1.55rem; margin: 10px 0 6px; color: var(--text-primary);">Is this your first time here?</h3>
       <p class="muted" style="font-size: 12.5px; line-height: 1.6;">
-        Welcome to the <strong>Digital Reporting System</strong>. Would you like a brief interactive guided walkthrough explaining how to lodge anonymous incidents, filter case threats, view side metrics, and leverage zero-knowledge browser encryption?
+        Welcome to the <strong>Digital Reporting System</strong>. Would you like a detailed 8-step interactive guided tour explaining anonymous case lodgement, directory filters, risk threat badges, evidence verification, and zero-knowledge encryption?
       </p>
     </div>
     <div class="tourChoiceButtons">
-      <button type="button" class="primary" id="startTourBtn">Yes, Start Guided Tour &rarr;</button>
-      <button type="button" class="secondary" id="declineTourBtn">No, I'm experienced</button>
+      <button type="button" class="primary" id="startTourBtn" onclick="startWalkthrough()">Yes, Start Guided Tour &rarr;</button>
+      <button type="button" class="secondary" id="declineTourBtn" onclick="closeWalkthrough()">No, I'm experienced</button>
     </div>
   </div>
 </div>
@@ -1369,16 +1356,21 @@
 <div id="walkthroughOverlay" class="walkthroughOverlay hidden">
   <div class="walkthroughSpotlight" id="walkthroughSpotlight"></div>
   <div class="walkthroughTooltip" id="walkthroughTooltip">
-    <div class="walkthroughStepBadge" id="walkthroughStepBadge">STEP 1 OF 4</div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+      <span class="walkthroughStepBadge" id="walkthroughStepBadge">STEP 1 OF 8</span>
+      <button type="button" class="walkthroughCloseIcon" onclick="closeWalkthrough()" title="Close Tour">&times;</button>
+    </div>
     <h4 class="walkthroughTitle" id="walkthroughTitle">Anonymous Lodgement</h4>
     <p class="walkthroughDesc" id="walkthroughDesc">Explanation text...</p>
     <div class="walkthroughControls">
-      <button type="button" class="secondary smallBtn" id="wtPrevBtn">&larr; Back</button>
-      <button type="button" class="secondary smallBtn" id="wtSkipBtn">Skip Tour</button>
-      <button type="button" class="primary smallBtn" id="wtNextBtn">Next &rarr;</button>
+      <button type="button" class="secondary smallBtn" id="wtPrevBtn" onclick="walkthroughPrev()">&larr; Back</button>
+      <button type="button" class="secondary smallBtn" id="wtSkipBtn" onclick="closeWalkthrough()">Skip Tour</button>
+      <button type="button" class="primary smallBtn" id="wtNextBtn" onclick="walkthroughNext()">Next &rarr;</button>
     </div>
   </div>
 </div>
+
+<script src="/app.js?v=3.2"></script>
 
 </body>
 </html>

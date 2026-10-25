@@ -2497,33 +2497,64 @@ $("#hoverSidebarHandle")?.addEventListener("click", () => {
   $("#hoverMetricsDrawer")?.classList.toggle("open");
 });
 
+
 // ==========================================
-// Interactive First-Time Visitor Walkthrough
+// Detailed 8-Step Interactive Incident Directory Walkthrough
 // ==========================================
 const TOUR_STEPS = [
   {
     target: "button[data-view='lodge']",
+    view: "reports",
     title: "1. Anonymous Incident Lodgement",
-    desc: "Lodge incidents with 100% anonymity. No user registration, email, or telephone number is ever collected. You receive an authentic 7-word Diceware keyphrase for ownership.",
-    position: "bottom"
+    desc: "Submit confidential reports with total anonymity. No registration, real name, email, or telephone number is ever collected. Every case generates a private 7-word Diceware keyphrase for ownership and amendments."
   },
   {
-    target: "#threatFilter",
-    title: "2. Threat Level & Importance Filters",
-    desc: "Use these filters to prioritize cases instantly. Filter reports dynamically by Threat Level (Low, Medium, High, Critical) and investigative Importance (Routine, Urgent, Priority).",
-    position: "bottom"
+    target: ".filterToolbar",
+    fallback: "#threatFilter",
+    view: "reports",
+    title: "2. Multi-Parametric Directory Filters",
+    desc: "Triage and filter incoming dossiers dynamically by Case Status (Pending, Investigating, Resolved), Threat Level (Low to Critical), and Priority Importance (Routine to Expedited) without page reloads."
+  },
+  {
+    target: ".reportTop",
+    fallback: ".reportCard",
+    view: "reports",
+    title: "3. Incident Reference & Risk Ratings",
+    desc: "Each incident card displays an immutable Reference Code (e.g. RPT-2026-00007), Event Category, Threat & Importance risk badges, and an '👁️ Views' inspection badge showing sensitive access audit logs."
+  },
+  {
+    target: ".glimpseBox",
+    fallback: ".reportCard",
+    view: "reports",
+    title: "4. Public Glimpse vs. WebCrypto Narrative",
+    desc: "The Public Glimpse lets community witnesses recognize the incident without leaking clues. The detailed forensic narrative is encrypted in your browser with 256-bit WebCrypto AES-GCM; the server is a blind carrier."
+  },
+  {
+    target: ".photoThumbnailCard",
+    fallback: ".reportMeta",
+    view: "reports",
+    title: "5. Visual Evidence & Digital Custody Hashes",
+    desc: "Uploaded crime scene photographs are sealed with SHA-256 cryptographic hashes to guarantee tamper resistance. Click any thumbnail to inspect high-resolution evidence and verified checksums."
+  },
+  {
+    target: ".endorsementBanner",
+    fallback: ".reportCard",
+    view: "reports",
+    title: "6. Authenticity Indications & Verification Vouches",
+    desc: "Citizens, verified journalists, and police officers can vouch for a report's authenticity. The endorsement ledger tracks corroboration across roles to distinguish genuine reports from false claims."
+  },
+  {
+    target: ".cardFooterButtons",
+    fallback: ".reportCard",
+    view: "reports",
+    title: "7. Two-Way Anonymous Inquiries & Official Actions",
+    desc: "Engage in secure two-way messaging with assigned detectives without revealing your identity. Police can attach official FIR numbers, request evidence amendments, or update case progress."
   },
   {
     target: "#hoverSidebarHandle",
-    title: "3. Slide-Out Case Metrics Sidebar",
-    desc: "Hover your mouse over this gold tab at any time to reveal live caseload counts across all 4 categories (Total Cases, Pending Review, Active Investigations, Resolved).",
-    position: "left"
-  },
-  {
-    target: "#ipSecurityPill",
-    title: "4. Zero-Knowledge WebCrypto E2EE",
-    desc: "Your confidential investigation narrative is encrypted directly in your browser using 256-bit WebCrypto AES-GCM before transport. The server acts as a blind carrier and cannot read your private text.",
-    position: "bottom"
+    view: "reports",
+    title: "8. Slide-Out Ledger Metrics Sidebar",
+    desc: "Hover over this gold handle on the screen edge to expand live counts and dynamic distribution bars across Total Cases, Pending Review, Active Investigations, and Resolved cases."
   }
 ];
 
@@ -2534,12 +2565,13 @@ function checkFirstTimeVisitor() {
   if (!seen) {
     setTimeout(() => {
       $("#firstTimePromptModal")?.classList.remove("hidden");
-    }, 1000);
+    }, 1200);
   }
 }
 
 function startWalkthrough() {
   $("#firstTimePromptModal")?.classList.add("hidden");
+  document.body.classList.add("tourActive");
   currentTourStep = 0;
   $("#walkthroughOverlay")?.classList.remove("hidden");
   renderTourStep();
@@ -2548,7 +2580,24 @@ function startWalkthrough() {
 function closeWalkthrough() {
   $("#walkthroughOverlay")?.classList.add("hidden");
   $("#firstTimePromptModal")?.classList.add("hidden");
+  document.body.classList.remove("tourActive");
   localStorage.setItem("drs_tour_completed", "true");
+}
+
+function walkthroughNext() {
+  if (currentTourStep < TOUR_STEPS.length - 1) {
+    currentTourStep++;
+    renderTourStep();
+  } else {
+    closeWalkthrough();
+  }
+}
+
+function walkthroughPrev() {
+  if (currentTourStep > 0) {
+    currentTourStep--;
+    renderTourStep();
+  }
 }
 
 function renderTourStep() {
@@ -2558,11 +2607,24 @@ function renderTourStep() {
     return;
   }
 
-  if (step.target.includes("threatFilter")) {
-    switchView("reports");
+  // Switch view if needed
+  if (step.view && step.view !== currentFilter) {
+    switchView(step.view);
   }
 
-  const el = document.querySelector(step.target);
+  // Locate target element
+  let el = document.querySelector(step.target);
+  if (!el && step.fallback) {
+    el = document.querySelector(step.fallback);
+  }
+
+  // Scroll to element while briefly unlocking overflow
+  document.body.classList.remove("tourActive");
+  if (el) {
+    el.scrollIntoView({ behavior: "instant", block: "center" });
+  }
+  document.body.classList.add("tourActive");
+
   const spotlight = $("#walkthroughSpotlight");
   const tooltip = $("#walkthroughTooltip");
   const badge = $("#walkthroughStepBadge");
@@ -2581,44 +2643,55 @@ function renderTourStep() {
   if (el) {
     const rect = el.getBoundingClientRect();
     if (spotlight) {
-      spotlight.style.top = `${rect.top - 6}px`;
-      spotlight.style.left = `${rect.left - 6}px`;
+      spotlight.style.top = `${Math.max(0, rect.top - 6)}px`;
+      spotlight.style.left = `${Math.max(0, rect.left - 6)}px`;
       spotlight.style.width = `${rect.width + 12}px`;
       spotlight.style.height = `${rect.height + 12}px`;
     }
 
     if (tooltip) {
-      let top = rect.bottom + 16;
-      let left = Math.max(16, Math.min(window.innerWidth - 370, rect.left));
-      if (top + 200 > window.innerHeight) {
-        top = Math.max(16, rect.top - 200);
+      const tooltipWidth = 380;
+      let top = rect.bottom + 14;
+      let left = Math.max(16, Math.min(window.innerWidth - tooltipWidth - 20, rect.left));
+
+      if (top + 240 > window.innerHeight) {
+        top = Math.max(16, rect.top - 240);
       }
       tooltip.style.top = `${top}px`;
       tooltip.style.left = `${left}px`;
+      tooltip.style.transform = "none";
     }
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  } else {
+    if (spotlight) {
+      spotlight.style.top = "20%";
+      spotlight.style.left = "20%";
+      spotlight.style.width = "60%";
+      spotlight.style.height = "60%";
+    }
+    if (tooltip) {
+      tooltip.style.top = "50%";
+      tooltip.style.left = "50%";
+      tooltip.style.transform = "translate(-50%, -50%)";
+    }
   }
 }
 
-// Bind walkthrough buttons
-$("#startTourBtn")?.addEventListener("click", startWalkthrough);
-$("#declineTourBtn")?.addEventListener("click", closeWalkthrough);
-$("#wtSkipBtn")?.addEventListener("click", closeWalkthrough);
-$("#wtPrevBtn")?.addEventListener("click", () => {
-  if (currentTourStep > 0) {
-    currentTourStep--;
-    renderTourStep();
-  }
+// Expose globals for bulletproof HTML button clicks
+window.startWalkthrough = startWalkthrough;
+window.closeWalkthrough = closeWalkthrough;
+window.walkthroughNext = walkthroughNext;
+window.walkthroughPrev = walkthroughPrev;
+
+// Attach event listeners as secondary safety
+document.addEventListener("DOMContentLoaded", () => {
+  $("#startTourBtn")?.addEventListener("click", startWalkthrough);
+  $("#declineTourBtn")?.addEventListener("click", closeWalkthrough);
+  $("#wtSkipBtn")?.addEventListener("click", closeWalkthrough);
+  $("#wtPrevBtn")?.addEventListener("click", walkthroughPrev);
+  $("#wtNextBtn")?.addEventListener("click", walkthroughNext);
+  $("#btnGuidedTourNav")?.addEventListener("click", startWalkthrough);
 });
-$("#wtNextBtn")?.addEventListener("click", () => {
-  if (currentTourStep < TOUR_STEPS.length - 1) {
-    currentTourStep++;
-    renderTourStep();
-  } else {
-    closeWalkthrough();
-  }
-});
-$("#btnGuidedTourNav")?.addEventListener("click", startWalkthrough);
+
 window.addEventListener("resize", () => {
   if (!$("#walkthroughOverlay")?.classList.contains("hidden")) {
     renderTourStep();
