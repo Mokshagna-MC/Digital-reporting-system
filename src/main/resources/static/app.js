@@ -2491,3 +2491,8 @@ window.switchView = switchView;
   await showApp();
   switchView("reports");
 })();
+
+// Toggle hover drawer on click (for mobile or pinned view)
+$("#hoverSidebarHandle")?.addEventListener("click", () => {
+  $("#hoverMetricsDrawer")?.classList.toggle("open");
+});

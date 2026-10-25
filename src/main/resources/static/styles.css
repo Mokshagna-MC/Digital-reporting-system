@@ -2333,3 +2333,120 @@ tr:hover td {
   border: 1px solid #90A4AE;
   color: #90A4AE;
 }
+
+/* =============================================================================
+   HOVER-REVEAL SLIDE-OUT METRICS SIDEBAR (VIEWED ONLY ON HOVER)
+   ============================================================================= */
+.hoverMetricsDrawer {
+  position: fixed;
+  top: 130px;
+  right: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  max-height: calc(100vh - 160px);
+  transform: translateX(calc(100% - 46px));
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+  will-change: transform;
+}
+
+.hoverMetricsDrawer:hover,
+.hoverMetricsDrawer:focus-within,
+.hoverMetricsDrawer.open {
+  transform: translateX(0);
+  box-shadow: -14px 0 45px rgba(0, 0, 0, 0.75);
+}
+
+.hoverSidebarHandle {
+  width: 46px;
+  background: var(--bg-surface);
+  border: 1px solid var(--sand-gold);
+  border-right: none;
+  border-radius: 10px 0 0 10px;
+  padding: 18px 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: -6px 4px 18px rgba(0, 0, 0, 0.45);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.hoverMetricsDrawer:hover .hoverSidebarHandle,
+.hoverMetricsDrawer.open .hoverSidebarHandle {
+  background: var(--sand-gold);
+}
+
+.hoverSidebarHandle .handleIcon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.hoverSidebarHandle .handleTitle {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.hoverMetricsDrawer:hover .hoverSidebarHandle .handleTitle,
+.hoverMetricsDrawer.open .hoverSidebarHandle .handleTitle {
+  color: #0A1215;
+}
+
+.hoverSidebarHandle .handleIndicator {
+  font-size: 14px;
+  color: var(--sand-gold);
+  transition: transform 0.3s ease;
+}
+
+.hoverMetricsDrawer:hover .hoverSidebarHandle .handleIndicator,
+.hoverMetricsDrawer.open .hoverSidebarHandle .handleIndicator {
+  transform: rotate(180deg);
+  color: #0A1215;
+}
+
+.hoverSidebarContent {
+  width: 320px;
+  max-height: calc(100vh - 160px);
+  overflow-y: auto;
+  background: var(--bg-base);
+  border: 1px solid var(--border-subtle);
+  border-right: none;
+  border-radius: 0 0 0 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: -10px 10px 36px rgba(0, 0, 0, 0.55);
+}
+
+.hoverSidebarContent .statsGrid.verticalStats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hoverSidebarContent .statCard {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hoverSidebarContent .statCard:hover,
+.hoverSidebarContent .statCard.active {
+  border-color: var(--sand-gold);
+  transform: translateX(-2px);
+}
