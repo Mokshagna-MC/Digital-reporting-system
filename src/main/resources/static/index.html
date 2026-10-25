@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=2.7">
+  <link rel="stylesheet" href="/styles.css?v=3.0">
 </head>
 <body>
 
@@ -60,20 +60,29 @@
 </div>
 
 <!-- ==========================================
-     MINECRAFT-STYLE VOXEL ROTATING BLOCK LOADER
+     CLASSIC 2D PIXELATED MINECRAFT LOADING WHEEL & PROGRESS BAR
      ========================================== -->
 <div id="minecraftLoader" class="mcLoadingOverlay hidden">
-  <div class="mcLoaderContent">
-    <div class="mcVoxelBlockWrap">
-      <div class="mcVoxelBlock">
-        <div class="cubeSide cubeFront"></div>
-        <div class="cubeSide cubeBack"></div>
-        <div class="cubeSide cubeRight"></div>
-        <div class="cubeSide cubeLeft"></div>
-        <div class="cubeSide cubeTop"></div>
-        <div class="cubeSide cubeBottom"></div>
-      </div>
+  <div class="mc2dLoaderContainer">
+    <!-- Authentic 2D Minecraft Pixel Rotating Square -->
+    <div class="mc2dPixelSquare">
+      <div class="mcPixelBit p1"></div>
+      <div class="mcPixelBit p2"></div>
+      <div class="mcPixelBit p3"></div>
+      <div class="mcPixelBit p4"></div>
+      <div class="mcPixelBit p5"></div>
+      <div class="mcPixelBit p6"></div>
+      <div class="mcPixelBit p7"></div>
+      <div class="mcPixelBit p8"></div>
     </div>
+    <div class="mc2dLoadingTitle" id="mcLoadingTitle">LOADING EVIDENTIARY BLOCKS...</div>
+    <div class="mc2dLoadingSub" id="mcLoadingSub">Building terrain chunks &amp; verifying digests</div>
+    <!-- Authentic 2D Pixel Minecraft Progress Bar -->
+    <div class="mcPixelProgressBarOuter">
+      <div class="mcPixelProgressBarInner" id="mcProgressBar" style="width: 20%;"></div>
+    </div>
+  </div>
+</div>
     <div class="mcPixelWheel">
       <span class="mcWheelBlock b1"></span>
       <span class="mcWheelBlock b2"></span>
@@ -102,6 +111,7 @@
     </div>
   </div>
   <div class="topbarActions">
+    <button id="btnGuidedTourNav" class="secondary smallBtn" type="button" title="Interactive UI Walkthrough">💡 Guided Tour</button>
     <div class="ipSecurityBadge" id="ipSecurityPill" title="Network-level protection: Tor/Reverse proxy IP scrubbing active">
       <span class="terminalBlink">●</span> <span class="retroFont">IP_SCRUBBED // NO_LOG</span>
     </div>
@@ -1334,6 +1344,41 @@
   </footer>
 </main>
 
-<script src="/app.js?v=2.7"></script>
+<script src="/app.js?v=3.0"></script>
+
+<!-- ==========================================
+     FIRST-TIME VISITOR ONBOARDING MODAL & INTERACTIVE WALKTHROUGH
+     ========================================== -->
+<div id="firstTimePromptModal" class="modal hidden">
+  <div class="modalContent tourWelcomeCard">
+    <div class="tourWelcomeHeader">
+      <div style="font-size: 32px; margin-bottom: 8px;">🧭</div>
+      <span class="slideNumberBadge retroFont">ORIENTATION GUIDE</span>
+      <h3 style="font-size: 1.55rem; margin: 10px 0 6px; color: var(--text-primary);">Is this your first time here?</h3>
+      <p class="muted" style="font-size: 12.5px; line-height: 1.6;">
+        Welcome to the <strong>Digital Reporting System</strong>. Would you like a brief interactive guided walkthrough explaining how to lodge anonymous incidents, filter case threats, view side metrics, and leverage zero-knowledge browser encryption?
+      </p>
+    </div>
+    <div class="tourChoiceButtons">
+      <button type="button" class="primary" id="startTourBtn">Yes, Start Guided Tour &rarr;</button>
+      <button type="button" class="secondary" id="declineTourBtn">No, I'm experienced</button>
+    </div>
+  </div>
+</div>
+
+<div id="walkthroughOverlay" class="walkthroughOverlay hidden">
+  <div class="walkthroughSpotlight" id="walkthroughSpotlight"></div>
+  <div class="walkthroughTooltip" id="walkthroughTooltip">
+    <div class="walkthroughStepBadge" id="walkthroughStepBadge">STEP 1 OF 4</div>
+    <h4 class="walkthroughTitle" id="walkthroughTitle">Anonymous Lodgement</h4>
+    <p class="walkthroughDesc" id="walkthroughDesc">Explanation text...</p>
+    <div class="walkthroughControls">
+      <button type="button" class="secondary smallBtn" id="wtPrevBtn">&larr; Back</button>
+      <button type="button" class="secondary smallBtn" id="wtSkipBtn">Skip Tour</button>
+      <button type="button" class="primary smallBtn" id="wtNextBtn">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

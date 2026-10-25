@@ -357,7 +357,7 @@ function initSecurityGateAnimation() {
         }
         setTimeout(() => {
           overlay.classList.add("hidden");
-          sessionStorage.setItem("drs_security_passed", "true");
+          sessionStorage.setItem("drs_security_passed", "true"); checkFirstTimeVisitor();
         }, 650);
       }
     }, 600);
@@ -365,7 +365,7 @@ function initSecurityGateAnimation() {
     const dismiss = () => {
       clearInterval(interval);
       overlay.classList.add("hidden");
-      sessionStorage.setItem("drs_security_passed", "true");
+      sessionStorage.setItem("drs_security_passed", "true"); checkFirstTimeVisitor();
     };
 
     skipBtn?.addEventListener("click", dismiss, { once: true });
@@ -2495,4 +2495,132 @@ window.switchView = switchView;
 // Toggle hover drawer on click (for mobile or pinned view)
 $("#hoverSidebarHandle")?.addEventListener("click", () => {
   $("#hoverMetricsDrawer")?.classList.toggle("open");
+});
+
+// ==========================================
+// Interactive First-Time Visitor Walkthrough
+// ==========================================
+const TOUR_STEPS = [
+  {
+    target: "button[data-view='lodge']",
+    title: "1. Anonymous Incident Lodgement",
+    desc: "Lodge incidents with 100% anonymity. No user registration, email, or telephone number is ever collected. You receive an authentic 7-word Diceware keyphrase for ownership.",
+    position: "bottom"
+  },
+  {
+    target: "#threatFilter",
+    title: "2. Threat Level & Importance Filters",
+    desc: "Use these filters to prioritize cases instantly. Filter reports dynamically by Threat Level (Low, Medium, High, Critical) and investigative Importance (Routine, Urgent, Priority).",
+    position: "bottom"
+  },
+  {
+    target: "#hoverSidebarHandle",
+    title: "3. Slide-Out Case Metrics Sidebar",
+    desc: "Hover your mouse over this gold tab at any time to reveal live caseload counts across all 4 categories (Total Cases, Pending Review, Active Investigations, Resolved).",
+    position: "left"
+  },
+  {
+    target: "#ipSecurityPill",
+    title: "4. Zero-Knowledge WebCrypto E2EE",
+    desc: "Your confidential investigation narrative is encrypted directly in your browser using 256-bit WebCrypto AES-GCM before transport. The server acts as a blind carrier and cannot read your private text.",
+    position: "bottom"
+  }
+];
+
+let currentTourStep = 0;
+
+function checkFirstTimeVisitor() {
+  const seen = localStorage.getItem("drs_tour_completed");
+  if (!seen) {
+    setTimeout(() => {
+      $("#firstTimePromptModal")?.classList.remove("hidden");
+    }, 1000);
+  }
+}
+
+function startWalkthrough() {
+  $("#firstTimePromptModal")?.classList.add("hidden");
+  currentTourStep = 0;
+  $("#walkthroughOverlay")?.classList.remove("hidden");
+  renderTourStep();
+}
+
+function closeWalkthrough() {
+  $("#walkthroughOverlay")?.classList.add("hidden");
+  $("#firstTimePromptModal")?.classList.add("hidden");
+  localStorage.setItem("drs_tour_completed", "true");
+}
+
+function renderTourStep() {
+  const step = TOUR_STEPS[currentTourStep];
+  if (!step) {
+    closeWalkthrough();
+    return;
+  }
+
+  if (step.target.includes("threatFilter")) {
+    switchView("reports");
+  }
+
+  const el = document.querySelector(step.target);
+  const spotlight = $("#walkthroughSpotlight");
+  const tooltip = $("#walkthroughTooltip");
+  const badge = $("#walkthroughStepBadge");
+  const title = $("#walkthroughTitle");
+  const desc = $("#walkthroughDesc");
+  const prevBtn = $("#wtPrevBtn");
+  const nextBtn = $("#wtNextBtn");
+
+  if (badge) badge.textContent = `STEP ${currentTourStep + 1} OF ${TOUR_STEPS.length}`;
+  if (title) title.textContent = step.title;
+  if (desc) desc.textContent = step.desc;
+
+  if (prevBtn) prevBtn.disabled = currentTourStep === 0;
+  if (nextBtn) nextBtn.textContent = currentTourStep === TOUR_STEPS.length - 1 ? "Finish Tour ✓" : "Next →";
+
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    if (spotlight) {
+      spotlight.style.top = `${rect.top - 6}px`;
+      spotlight.style.left = `${rect.left - 6}px`;
+      spotlight.style.width = `${rect.width + 12}px`;
+      spotlight.style.height = `${rect.height + 12}px`;
+    }
+
+    if (tooltip) {
+      let top = rect.bottom + 16;
+      let left = Math.max(16, Math.min(window.innerWidth - 370, rect.left));
+      if (top + 200 > window.innerHeight) {
+        top = Math.max(16, rect.top - 200);
+      }
+      tooltip.style.top = `${top}px`;
+      tooltip.style.left = `${left}px`;
+    }
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+}
+
+// Bind walkthrough buttons
+$("#startTourBtn")?.addEventListener("click", startWalkthrough);
+$("#declineTourBtn")?.addEventListener("click", closeWalkthrough);
+$("#wtSkipBtn")?.addEventListener("click", closeWalkthrough);
+$("#wtPrevBtn")?.addEventListener("click", () => {
+  if (currentTourStep > 0) {
+    currentTourStep--;
+    renderTourStep();
+  }
+});
+$("#wtNextBtn")?.addEventListener("click", () => {
+  if (currentTourStep < TOUR_STEPS.length - 1) {
+    currentTourStep++;
+    renderTourStep();
+  } else {
+    closeWalkthrough();
+  }
+});
+$("#btnGuidedTourNav")?.addEventListener("click", startWalkthrough);
+window.addEventListener("resize", () => {
+  if (!$("#walkthroughOverlay")?.classList.contains("hidden")) {
+    renderTourStep();
+  }
 });

@@ -9,6 +9,7 @@ import com.example.backend.repository.ReportContributionRepository;
 import com.example.backend.repository.ReportRepository;
 import com.example.backend.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
@@ -35,14 +36,13 @@ public class DashboardController {
     }
 
     @GetMapping
+    @Cacheable(value = "dashboardMetrics", key = "'publicDashboard'", condition = "#session.getAttribute('userId') == null")
     public ResponseEntity<?> dashboard(HttpSession session) {
         Object id = session.getAttribute("userId");
         User user = (id instanceof Long userId) ? users.findById(userId).orElse(null) : null;
 
         boolean isStaff = user != null && ("POLICE".equals(user.getRole()) || "ADMIN".equals(user.getRole()));
         
-        // In the Digital Reporting System (Zero User Data / Public Intake),
-        // top-level metrics accurately represent public totals across all cases.
         List<Report> all = reports.findAllByOrderByCreatedAtDesc();
 
         long pending = all.stream().filter(r -> "PENDING".equalsIgnoreCase(r.getStatus())).count();

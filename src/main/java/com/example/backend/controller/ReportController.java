@@ -1,5 +1,9 @@
 package com.example.backend.controller;
 
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import com.example.backend.service.AsyncIncidentProcessor;
+import com.example.backend.security.XssSanitizationFilter;
 import com.example.backend.dto.KeyphraseAccessRequest;
 import com.example.backend.dto.OfficialRequest;
 import com.example.backend.dto.ReportMessageRequest;
@@ -43,6 +47,7 @@ public class ReportController {
     private final ReportEndorsementRepository endorsementRepository;
     private final ReportMessageRepository reportMessageRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AsyncIncidentProcessor asyncProcessor;
 
     public ReportController(ReportRepository reports,
                             UserRepository users,
@@ -54,7 +59,8 @@ public class ReportController {
                             EvidenceRepository evidenceRepository,
                             ReportEndorsementRepository endorsementRepository,
                             ReportMessageRepository reportMessageRepository,
-                            PasswordEncoder passwordEncoder) {
+                            PasswordEncoder passwordEncoder,
+                            AsyncIncidentProcessor asyncProcessor) {
         this.reports = reports;
         this.users = users;
         this.auditLogService = auditLogService;
@@ -66,6 +72,7 @@ public class ReportController {
         this.endorsementRepository = endorsementRepository;
         this.reportMessageRepository = reportMessageRepository;
         this.passwordEncoder = passwordEncoder;
+        this.asyncProcessor = asyncProcessor;
     }
 
     private static final String POW_SECRET = "DRS_POW_SECRET_SALT_2026";
@@ -295,6 +302,8 @@ public class ReportController {
         }
 
         Report saved = reports.save(r);
+        // Asynchronous non-blocking spatial corroboration
+        asyncProcessor.computeHaversineCorroborationAsync(saved.getId(), saved.getLatitude(), saved.getLongitude(), saved.getEventType());
 
         // Bind this report to the active HTTP session immediately
         session.setAttribute("accessibleReportId", saved.getId());
@@ -649,6 +658,7 @@ public class ReportController {
     }
 
     @GetMapping
+    @Cacheable(value = "publicReports", key = "(#status == null || #status.isBlank()) ? 'ALL' : #status.trim().toUpperCase()", condition = "#session.getAttribute('userId') == null")
     public ResponseEntity<?> list(@RequestParam(required=false) String status, HttpSession session) {
         User user = currentUser(session);
         List<Report> result = (status == null || status.isBlank())
@@ -683,9 +693,8 @@ public class ReportController {
         Report r = reports.findById(id).orElse(null);
         if (r == null) return ResponseEntity.notFound().build();
 
-        auditLogService.log(id, "SENSITIVE_REPORT_VIEWED", user.getUsername(), user.getRole(),
-                String.format("User %s (%s) accessed confidential case narrative & evidentiary details of %s",
-                        user.getUsername(), user.getRole(), r.getReferenceCode()), null, "VIEWED");
+        // Asynchronous non-blocking view audit recording
+        asyncProcessor.recordViewAuditAsync(id, user.getUsername(), user.getRole(), r.getReferenceCode());
 
         long count = auditLogRepository.countByReportIdAndAction(id, "SENSITIVE_REPORT_VIEWED");
         return ResponseEntity.ok(Map.of("message", "View logged.", "viewsCount", count));
