@@ -135,33 +135,50 @@ public class ReportController {
         if (text != null && text.trim().startsWith("ENC:")) {
             return null; // Client-side asymmetrically encrypted ciphertext bypasses plaintext entropy checks
         }
-        if (text == null || text.trim().length() < 12) {
-            return fieldName + " must contain at least 12 characters with descriptive details.";
+        if (text == null || text.trim().length() < 10) {
+            return fieldName + " must contain at least 10 characters with descriptive details.";
         }
         String clean = text.trim();
+        // Reject 5+ identical consecutive characters (e.g. "aaaaaa", "111111")
         if (Pattern.compile("(.)\\1{4,}").matcher(clean).find()) {
             return fieldName + " contains repetitive characters or keyboard spam. Please provide genuine descriptive text.";
         }
         String[] rawWords = clean.toLowerCase().split("[^a-zA-Z0-9]+");
         Set<String> distinctWords = new HashSet<>();
+        int validWordCount = 0;
         for (String w : rawWords) {
             if (w.length() >= 2) {
+                validWordCount++;
                 distinctWords.add(w);
             }
         }
         if (distinctWords.size() < 3) {
             return fieldName + " must contain at least 3 distinct descriptive words.";
         }
+        // If there are many words, ensure they are not just the same 1 or 2 words looped
+        if (validWordCount >= 8 && ((double) distinctWords.size() / validWordCount) < 0.30) {
+            return fieldName + " contains too many repeated words. Please provide genuine descriptive details.";
+        }
+
         int alphaCount = 0;
-        Set<Character> distinctChars = new HashSet<>();
+        Map<Character, Integer> charFreq = new HashMap<>();
         for (char c : clean.toLowerCase().toCharArray()) {
             if (Character.isLetter(c)) {
                 alphaCount++;
-                distinctChars.add(c);
+                charFreq.put(c, charFreq.getOrDefault(c, 0) + 1);
             }
         }
-        if (alphaCount >= 15 && ((double) distinctChars.size() / alphaCount) < 0.22) {
+        int maxCharCount = charFreq.values().stream().max(Integer::compareTo).orElse(0);
+
+        // Reject looping or single-character flooded text
+        if (alphaCount >= 15 && charFreq.size() < 4) {
             return fieldName + " appears repetitive or lacks sufficient character variety. Please describe what occurred with realistic details.";
+        }
+        if (alphaCount >= 30 && charFreq.size() < 6) {
+            return fieldName + " appears repetitive or lacks sufficient character variety. Please describe what occurred with realistic details.";
+        }
+        if (alphaCount >= 15 && ((double) maxCharCount / alphaCount) > 0.45) {
+            return fieldName + " contains excessive repetition of a single character. Please describe what occurred with realistic details.";
         }
         return null;
     }
