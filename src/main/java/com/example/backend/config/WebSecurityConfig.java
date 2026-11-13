@@ -14,8 +14,8 @@ public class WebSecurityConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns("http://localhost:[*]", "http://127.0.0.1:[*]", "https://*.onrender.com", "https://*.railway.app")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedOriginPatterns("http://localhost:[*]", "http://127.0.0.1:[*]", "https://*.onrender.com", "https://*.railway.app", "https://*.vercel.app", "https://*")
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);

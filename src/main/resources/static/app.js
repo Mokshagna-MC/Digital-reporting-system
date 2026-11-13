@@ -282,9 +282,20 @@ function lockFutureDates() {
   });
 }
 
+// ==========================================
+// API BASE URL CONFIGURATION (Localhost vs Render Cloud)
+// ==========================================
+// Set this to your live Render backend URL when deployed on Vercel:
+const DEFAULT_RENDER_BACKEND_URL = "https://drs-api.onrender.com";
+
+const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+  ? "" 
+  : (localStorage.getItem("drs_backend_url") || DEFAULT_RENDER_BACKEND_URL);
+
 async function api(url, options={}) {
-  const response = await fetch(url, {
-    credentials: "same-origin",
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
+  const response = await fetch(fullUrl, {
+    credentials: "include",
     headers: {"Content-Type": "application/json", ...(options.headers || {})},
     ...options
   });
@@ -1066,7 +1077,7 @@ $("#reportForm")?.addEventListener("submit", async e => {
 
     // Feature 2: Proof-of-Work Challenge
     try {
-      const challengeRes = await fetch("/api/reports/challenge").then(r => r.json());
+      const challengeRes = await api("/api/reports/challenge");
       if (challengeRes && challengeRes.challenge) {
         const nonce = await solveProofOfWork(challengeRes.challenge, challengeRes.difficultyPrefix || "0000");
         f.powChallenge = challengeRes.challenge;
