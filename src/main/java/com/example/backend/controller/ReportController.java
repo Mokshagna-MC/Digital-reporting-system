@@ -183,6 +183,69 @@ public class ReportController {
         return null;
     }
 
+    /**
+     * Automatic Keyword & Heuristic Severity Assessment Engine
+     * Evaluates incident details against threat and priority keyword matrices
+     * to prevent manual bias or misclassification.
+     */
+    public static Map<String, String> evaluateThreatAndImportance(String eventType, String overview, String description) {
+        String combined = ((eventType != null ? eventType : "") + " " +
+                           (overview != null ? overview : "") + " " +
+                           (description != null ? description : "")).toLowerCase();
+
+        // 1. Critical Threat & Urgent Importance keywords (weapons, active danger, loss of life, severe violence)
+        String[] criticalKeywords = {
+            "gun", "shooting", "firearm", "rifle", "pistol", "bullet", "bullets", "armed", "active shooter", "sniper", "bandook", "goli",
+            "bomb", "explosive", "explosion", "hostage", "kidnap", "kidnapped", "abduction", "abducted",
+            "murder", "murdered", "kill", "killed", "homicide", "terror", "terrorist", "terrorism",
+            "stab", "stabbed", "knife attack", "machete", "casualty", "casualties", "mass casualty",
+            "arson", "fire trap", "child abuse", "rape", "sexual assault", "trafficking", "human trafficking", "lynch", "hatya", "chaku"
+        };
+
+        // 2. High Threat & Priority Importance keywords (major robbery, extortion, physical assault, narcotics, riot)
+        String[] highKeywords = {
+            "robbery", "heist", "assault", "assaulted", "extortion", "blackmail", "stalking", "stalked",
+            "grenade", "poison", "cyanide", "death threat", "smuggling", "gang", "syndicate",
+            "narcotics", "fentanyl", "heroin", "cocaine", "cartel", "riot", "violent", "violence", "loot", "dacoity",
+            "strangle", "beating", "choke", "weapon", "weapons"
+        };
+
+        // 3. Medium Threat & Routine Importance keywords (property theft, cybercrime, scams, vandalism)
+        String[] mediumKeywords = {
+            "burglary", "theft", "stolen", "thief", "break-in", "pickpocket", "fraud", "scam", "scammed",
+            "embezzlement", "cybercrime", "hack", "hacked", "bribe", "bribery", "corruption",
+            "vandalism", "vandalized", "damage", "trespassing", "vehicle theft", "carjacking", "shoplifting", "chori"
+        };
+
+        for (String kw : criticalKeywords) {
+            if (combined.contains(kw)) {
+                return Map.of("threatLevel", "CRITICAL", "importance", "URGENT", "trigger", kw);
+            }
+        }
+        for (String kw : highKeywords) {
+            if (combined.contains(kw)) {
+                return Map.of("threatLevel", "HIGH", "importance", "PRIORITY", "trigger", kw);
+            }
+        }
+        for (String kw : mediumKeywords) {
+            if (combined.contains(kw)) {
+                return Map.of("threatLevel", "MEDIUM", "importance", "ROUTINE", "trigger", kw);
+            }
+        }
+
+        // Category-based fallback
+        if (eventType != null) {
+            String cat = eventType.trim().toLowerCase();
+            if (cat.contains("assault") || cat.contains("public safety") || cat.contains("missing")) {
+                return Map.of("threatLevel", "HIGH", "importance", "PRIORITY", "trigger", "category:" + eventType);
+            } else if (cat.contains("theft") || cat.contains("fraud") || cat.contains("traffic")) {
+                return Map.of("threatLevel", "MEDIUM", "importance", "ROUTINE", "trigger", "category:" + eventType);
+            }
+        }
+
+        return Map.of("threatLevel", "LOW", "importance", "ROUTINE", "trigger", "default");
+    }
+
     private Report findNearDuplicate(ReportRequest req, LocalDateTime now) {
         LocalDateTime cutoff = now.minusMinutes(45);
         List<Report> recent = reports.findByCreatedAtAfterOrderByCreatedAtDesc(cutoff);
@@ -271,10 +334,15 @@ public class ReportController {
 
         Report r = new Report();
         r.setEventType(request.getEventType().trim());
-        r.setThreatLevel(request.getThreatLevel() != null && !request.getThreatLevel().isBlank()
-                ? request.getThreatLevel().trim().toUpperCase() : "MEDIUM");
-        r.setImportance(request.getImportance() != null && !request.getImportance().isBlank()
-                ? request.getImportance().trim().toUpperCase() : "ROUTINE");
+
+        // Automatic Keyword & Heuristic Severity Assessment (no manual guessing by user)
+        Map<String, String> autoSeverity = evaluateThreatAndImportance(
+                request.getEventType(),
+                request.getIncidentOverview(),
+                request.getDescription()
+        );
+        r.setThreatLevel(autoSeverity.get("threatLevel"));
+        r.setImportance(autoSeverity.get("importance"));
 
         // 2. Public Glimpse vs Confidential Detailed Description
         String overview = request.getIncidentOverview();
@@ -402,6 +470,7 @@ public class ReportController {
         Map<String, Object> resp = toMap(saved, reporter, session);
         resp.put("secretKeyphrase", keyphrase);
         resp.put("sessionToken", sessionToken);
+        resp.put("threatTrigger", autoSeverity.get("trigger"));
         if (nearDuplicate != null) {
             resp.put("duplicateClustered", true);
             resp.put("parentReferenceCode", nearDuplicate.getReferenceCode());
@@ -675,7 +744,6 @@ public class ReportController {
     }
 
     @GetMapping
-    @Cacheable(value = "publicReports", key = "(#status == null || #status.isBlank()) ? 'ALL' : #status.trim().toUpperCase()", condition = "#session.getAttribute('userId') == null")
     public ResponseEntity<?> list(@RequestParam(required=false) String status, HttpSession session) {
         User user = currentUser(session);
         List<Report> result = (status == null || status.isBlank())
@@ -911,9 +979,11 @@ public class ReportController {
         m.put("eventType", r.getEventType());
 
         // Overview is always public
-        m.put("incidentOverview", r.getIncidentOverview() != null && !r.getIncidentOverview().isBlank()
+        String rawDesc = r.getDescription() != null ? r.getDescription() : "";
+        String overview = (r.getIncidentOverview() != null && !r.getIncidentOverview().isBlank())
                 ? r.getIncidentOverview()
-                : r.getDescription().substring(0, Math.min(180, r.getDescription().length())) + "...");
+                : (!rawDesc.isBlank() ? (rawDesc.length() > 180 ? rawDesc.substring(0, 180) + "..." : rawDesc) : "Confidential incident details on record.");
+        m.put("incidentOverview", overview);
 
         // Description Privacy
         boolean isOwner = (viewingUser != null && r.getReporter() != null && r.getReporter().getId().equals(viewingUser.getId()))

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Fira+Code:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=3.3">
+  <link rel="stylesheet" href="/styles.css?v=5.0">
 </head>
 <body>
 
@@ -89,8 +89,8 @@
 <header class="topbar">
   <div class="brandGroup">
     <div>
-      <div class="brand">DIGITAL REPORTING SYSTEM</div>
-      <div class="subbrand">Confidential Incident Registry &middot; Cryptographic Keyphrase Access</div>
+      <div class="brand" data-i18n="brand_title">DIGITAL REPORTING SYSTEM</div>
+      <div class="subbrand" data-i18n="brand_sub">Confidential Incident Registry · Cryptographic Keyphrase Access</div>
     </div>
   </div>
   <div class="topbarActions">
@@ -98,18 +98,35 @@
     <div class="ipSecurityBadge" id="ipSecurityPill" title="Network-level protection: Tor/Reverse proxy IP scrubbing active">
       <span class="terminalBlink">●</span> <span class="retroFont">IP_SCRUBBED // NO_LOG</span>
     </div>
-    <button id="btnTrackCaseNav" class="secondary smallBtn" type="button" title="Track or resume an existing case with Secret Keyphrase">
+    <button id="btnTrackCaseNav" class="secondary smallBtn" type="button" data-i18n="track_case_btn" title="Track or resume an existing case with Secret Keyphrase">
       Track Case
     </button>
-    <button id="btnAuthorityLoginNav" class="secondary smallBtn" type="button" title="Police, Investigators, and Administrative Officials Portal">
+    <button id="btnAuthorityLoginNav" class="secondary smallBtn" type="button" data-i18n="authority_btn" title="Police, Investigators, and Administrative Officials Portal">
       Authority Portal
     </button>
     <button id="themeToggleBtn" class="themeToggleBtn" type="button" title="Toggle Light / Dark Mode">
       <span id="themeToggleIcon">🌙</span> <span id="themeToggleText">Dark Mode</span>
     </button>
+    <!-- Themed Language Pill Selector (Single unified control) -->
+    <div class="langPickerWrapper" id="langPickerWrapper" role="group" aria-label="Website Language Selector">
+      <div class="quickLangPills">
+        <button type="button" class="quickLangBtn active" id="langBtnEn" onclick="setLanguage('en')" title="English">EN</button>
+        <button type="button" class="quickLangBtn" id="langBtnHi" onclick="setLanguage('hi')" title="हिंदी">हिन्दी</button>
+        <button type="button" class="quickLangBtn" id="langBtnTe" onclick="setLanguage('te')" title="తెలుగు">తెలుగు</button>
+      </div>
+    </div>
+    <button id="screenReaderBtn" class="secondary smallBtn screenReaderBtn" type="button" title="Toggle Audio Screen Reader for Visually Impaired" aria-label="Toggle Voice Screen Reader">
+      <span id="srIcon">🔊</span> <span id="srLabel">Screen Reader: OFF</span>
+    </button>
+    <button id="burnSessionNavBtn" class="danger smallBtn burnSessionBtn" type="button" title="Burn local session and wipe all saved browser traces">
+      🔥 Burn Session
+    </button>
     <div id="userArea"></div>
   </div>
 </header>
+<button id="readPageFloatingBtn" class="readPageFloatingBtn" type="button" title="Read Active Page Aloud via Voice Screen Reader" aria-label="Read Active Page Aloud">
+  <span>🔊 Read Page Aloud</span>
+</button>
 
 <!-- ==========================================
      HOVER-REVEAL METRICS SIDEBAR (SLIDES OUT ONLY ON MOUSE HOVER)
@@ -127,14 +144,14 @@
         <span class="slideNumberBadge retroFont">ALL 4 STAT BLOCKS</span>
         <span class="muted" style="font-size:10px; font-family:var(--font-mono);">HOVER SIDEBAR</span>
       </div>
-      <h3 class="sidebarHeading">Case Metric Ledger</h3>
+      <h3 class="sidebarHeading" data-i18n="sidebar_heading">Case Metric Ledger</h3>
       <p class="muted" style="font-size: 11.5px; margin: 4px 0 10px;">Total Cases &middot; Pending &middot; Active &middot; Resolved &middot; Click to filter</p>
     </div>
 
     <div class="statsGrid verticalStats" id="mainStatsBar">
       <div class="statCard statFilterBtn active" data-status="ALL" title="Click to view all incident cases">
         <div class="statTop">
-          <span class="statLabel">Total Cases</span>
+          <span class="statLabel" data-i18n="stat_total">Total Cases</span>
           <span class="slideNumberBadge retroFont">BLOCK 01</span>
         </div>
         <div class="statValue retroFont" id="totalCount">0</div>
@@ -142,7 +159,7 @@
       </div>
       <div class="statCard statFilterBtn" data-status="PENDING" title="Click to filter Pending Initial Review">
         <div class="statTop">
-          <span class="statLabel">Pending Review</span>
+          <span class="statLabel" data-i18n="stat_pending">Pending Review</span>
           <span class="slideNumberBadge retroFont">BLOCK 02</span>
         </div>
         <div class="statValue retroFont" id="pendingCount">0</div>
@@ -150,7 +167,7 @@
       </div>
       <div class="statCard statFilterBtn" data-status="INVESTIGATING" title="Click to filter Active Investigations">
         <div class="statTop">
-          <span class="statLabel">Active Investigations</span>
+          <span class="statLabel" data-i18n="stat_investigating">Active Investigations</span>
           <span class="slideNumberBadge retroFont">BLOCK 03</span>
         </div>
         <div class="statValue retroFont" id="investigatingCount">0</div>
@@ -158,7 +175,7 @@
       </div>
       <div class="statCard statFilterBtn" data-status="RESOLVED" title="Click to filter Resolved / Closed Cases">
         <div class="statTop">
-          <span class="statLabel">Resolved / Closed</span>
+          <span class="statLabel" data-i18n="stat_resolved">Resolved / Closed</span>
           <span class="slideNumberBadge retroFont">BLOCK 04</span>
         </div>
         <div class="statValue retroFont" id="resolvedCount">0</div>
@@ -208,9 +225,9 @@
     <!-- Hero / Introduction Section (Restrained Editorial Asymmetry) -->
     <div class="heroHeader">
       <div>
-        <span class="slideNumberBadge">Public Evidentiary Ledger</span>
-        <h1 id="welcomeTitle">Confidential Incident &amp; Evidentiary Reporting</h1>
-        <p id="roleText" class="muted">A zero-knowledge digital registry preserving witness testimonies, chain-of-custody checksums, and two-way confidential communications with authorities.</p>
+        <span class="slideNumberBadge" data-i18n="hero_badge">Public Evidentiary Ledger</span>
+        <h1 id="welcomeTitle" data-i18n="hero_title">Confidential Incident &amp; Evidentiary Reporting</h1>
+        <p id="roleText" class="muted" data-i18n="hero_sub">A zero-knowledge digital registry preserving witness testimonies, chain-of-custody checksums, and two-way confidential communications with authorities.</p>
       </div>
       <div id="headerActionsArea">
         <button id="logoutBtn" class="secondary logoutBtn hidden">Sign Out</button>
@@ -219,14 +236,14 @@
 
     <!-- Navigation Bar (Editorial Tabs) -->
     <nav class="navBar">
-      <button class="navBtn active" data-view="reports">Incident Directory</button>
-      <button class="navBtn" data-view="lodge">Lodge Incident (Anonymous)</button>
-      <button class="navBtn" data-view="track">Track with Keyphrase</button>
-      <button class="navBtn" data-view="contribute">Proximity &amp; Witness Matching</button>
-      <button class="navBtn hidden" id="navCredentials" data-view="credentials">Official Credentials</button>
-      <button class="navBtn hidden" id="navOfficials" data-view="officials">Officials Registry</button>
-      <button class="navBtn hidden" id="navAdminWindow" data-view="adminWindow">Admin Window</button>
-      <button class="navBtn hidden" id="navAuditLogs" data-view="auditLogs">Audit Trail</button>
+      <button class="navBtn active" data-view="reports" data-i18n="tab_directory">Incident Directory</button>
+      <button class="navBtn" data-view="lodge" data-i18n="tab_lodge">Lodge Incident (Anonymous)</button>
+      <button class="navBtn" data-view="track" data-i18n="tab_track">Track with Keyphrase</button>
+      <button class="navBtn" data-view="contribute" data-i18n="tab_proximity">Proximity &amp; Witness Matching</button>
+      <button class="navBtn hidden" id="navCredentials" data-view="credentials" data-i18n="tab_credentials">Official Credentials</button>
+      <button class="navBtn hidden" id="navOfficials" data-view="officials" data-i18n="tab_officials">Officials Registry</button>
+      <button class="navBtn hidden" id="navAdminWindow" data-view="adminWindow" data-i18n="tab_admin">Admin Window</button>
+      <button class="navBtn hidden" id="navAuditLogs" data-view="auditLogs" data-i18n="tab_audit">Audit Trail</button>
     </nav>
 
     
@@ -244,8 +261,8 @@
       <section id="newLodgePanel" class="panel">
         <div class="panelHeader">
           <div class="panelTitleGroup">
-            <span class="slideNumberBadge">Lodge Report</span>
-            <h2>Record an Incident Report</h2>
+            <span class="slideNumberBadge" data-i18n="lodge_badge">Lodge Report</span>
+            <h2 data-i18n="lodge_title">Record an Incident Report</h2>
             <p class="muted">No personal data required. Set a Secret Keyphrase to maintain exclusive ownership, amend details, and communicate with investigating authorities.</p>
           </div>
         </div>
@@ -254,8 +271,8 @@
         <div class="zeroDataNotice">
           <span style="font-size: 20px;">&sect;</span>
           <div>
-            <strong>Confidential Zero-Knowledge Submission</strong>
-            <p>No user data, registration, name, email, or telephone number is collected. You will use a <strong>Secret Keyphrase</strong> as your private cryptographic key to access your case, amend details, and communicate back and forth with authorities anytime.</p>
+            <strong data-i18n="zero_data_title">Confidential Zero-Knowledge Submission</strong>
+            <p data-i18n="zero_data_desc">No user data, registration, name, email, or telephone number is collected. You will use a Secret Keyphrase as your private cryptographic key to access your case, amend details, and communicate back and forth with authorities anytime.</p>
           </div>
         </div>
 
@@ -273,89 +290,99 @@
 
         <form id="reportForm" class="form grid">
           <label>
-            <span>Incident Category <span style="color: #992828;">*</span></span>
+            <span data-i18n="cat_label">Incident Category *</span>
             <select name="eventType" required>
-              <option value="">Choose a category</option>
-              <option>Theft</option>
-              <option>Fraud / Cybercrime</option>
-              <option>Harassment</option>
-              <option>Assault</option>
-              <option>Missing person</option>
-              <option>Traffic incident</option>
-              <option>Public safety</option>
-              <option>Other</option>
+              <option value="" data-i18n="cat_choose">Choose a category</option>
+              <option value="Theft" data-i18n="cat_theft">Theft</option>
+              <option value="Fraud / Cybercrime" data-i18n="cat_fraud">Fraud / Cybercrime</option>
+              <option value="Harassment" data-i18n="cat_harassment">Harassment</option>
+              <option value="Assault" data-i18n="cat_assault">Assault</option>
+              <option value="Missing person" data-i18n="cat_missing">Missing person</option>
+              <option value="Traffic incident" data-i18n="cat_traffic">Traffic incident</option>
+              <option value="Public safety" data-i18n="cat_safety">Public safety</option>
+              <option value="Other" data-i18n="cat_other">Other</option>
             </select>
           </label>
 
           <label>
-            <span>Date &amp; Time of Incident <span style="color: #992828;">*</span></span>
+            <span data-i18n="datetime_label">Date &amp; Time of Incident *</span>
             <input name="dateTime" id="reportDateTimeInput" type="datetime-local" required>
-            <span id="dateTimeFeedback" class="muted" style="font-size: 11px;">Must not be set to a future hour.</span>
+            <span id="dateTimeFeedback" class="muted" style="font-size: 11px;" data-i18n="datetime_help">Must not be set to a future hour.</span>
           </label>
 
           <label class="full">
-            <span>Location / Street / Landmark <span style="color: #992828;">*</span></span>
+            <span data-i18n="loc_label">Location / Street / Landmark *</span>
             <div class="inputWithAction">
-              <input name="loc" id="reportLocInput" maxlength="500" placeholder="Street, junction, landmark, city" required>
-              <button type="button" id="detectLocBtn" class="secondary actionBtn">Detect GPS</button>
+              <input name="loc" id="reportLocInput" maxlength="500" placeholder="Street, junction, landmark, city" data-i18n-placeholder="loc_placeholder" required>
+              <button type="button" id="detectLocBtn" class="secondary actionBtn" data-i18n="detect_gps_btn">Detect GPS</button>
             </div>
           </label>
 
-                    <label>
-            <span>Threat Level Assessment</span>
-            <select name="threatLevel" id="reportThreatSelect">
-              <option value="LOW">Low Threat</option>
-              <option value="MEDIUM" selected>Medium Threat</option>
-              <option value="HIGH">High Threat</option>
-              <option value="CRITICAL">Critical Threat</option>
-            </select>
-          </label>
+                    <!-- Automated Threat Engine: Evaluated in background via keywords -->
+          <input type="hidden" name="threatLevel" id="reportThreatHidden" value="MEDIUM">
+          <input type="hidden" name="importance" id="reportImportanceHidden" value="ROUTINE">
 
-          <label>
-            <span>Investigative Importance</span>
-            <select name="importance" id="reportImportanceSelect">
-              <option value="ROUTINE" selected>Routine</option>
-              <option value="URGENT">Urgent Attention</option>
-              <option value="PRIORITY">Priority Case</option>
-              <option value="HIGH_PRIORITY">High Priority / Expedited</option>
-            </select>
-          </label>
+          <!-- Reassuring Citizen Privacy Assurance (No alarming threat metrics) -->
+          <div class="full" id="citizenPrivacyAssuranceBox" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: rgba(78, 173, 138, 0.08); border: 1px solid rgba(78, 173, 138, 0.25); border-radius: var(--radius-sm); margin: 6px 0;">
+            <span style="font-size: 22px;">🛡️</span>
+            <div>
+              <strong style="color: var(--sand-gold); font-size: 13px;" data-i18n="privacy_assurance_title">Confidential Lodgement Active</strong>
+              <div class="muted" style="font-size: 11.5px; margin-top: 2px;" data-i18n="privacy_assurance_desc">Your statements are sealed with 256-bit WebCrypto client-side encryption. No identity or personal telemetry is ever recorded.</div>
+            </div>
+          </div>
+
+          <!-- Official Intake Severity Box (Only displayed when staff/police is logged in) -->
+          <div class="full autoThreatContainer" id="autoThreatBox" style="display: none;">
+            <div class="autoThreatHeader">
+              <span class="threatEngineBadge">⚡ SYSTEM SEVERITY ENGINE (OFFICIAL VIEW)</span>
+              <span class="muted" style="font-size: 11px;">Automated keyword severity assessment for triage &amp; dispatch</span>
+            </div>
+            <div class="autoThreatDisplayRow">
+              <div class="threatLivePill MEDIUM" id="threatLivePill">
+                <span class="threatPillIcon" id="threatPillIcon">ℹ️</span>
+                <span class="threatPillText" id="threatPillText">EVALUATING: MEDIUM THREAT · ROUTINE PRIORITY</span>
+              </div>
+              <div class="threatKeywordAudit muted" id="threatKeywordAudit">
+                Analysis: Awaiting narrative description...
+              </div>
+            </div>
+          </div>
 
           <div class="coordRow full">
             <label>
-              <span>Latitude (Optional)</span>
-              <input name="latitude" id="reportLatInput" type="number" step="any" placeholder="Auto-filled via GPS">
+              <span data-i18n="lat_label">Latitude (Optional)</span>
+              <input name="latitude" id="reportLatInput" type="number" step="any" placeholder="Auto-filled via GPS" data-i18n-placeholder="gps_autofilled">
             </label>
             <label>
-              <span>Longitude (Optional)</span>
-              <input name="longitude" id="reportLngInput" type="number" step="any" placeholder="Auto-filled via GPS">
+              <span data-i18n="lng_label">Longitude (Optional)</span>
+              <input name="longitude" id="reportLngInput" type="number" step="any" placeholder="Auto-filled via GPS" data-i18n-placeholder="gps_autofilled">
             </label>
           </div>
 
           <!-- Secret Keyphrase Field -->
           <label class="full" style="background: var(--sand-soft); border: 1px solid var(--sand-border); border-radius: var(--radius-md); padding: 14px 18px; margin-top: 4px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span style="font-weight: 700; color: var(--navy-deep); font-size: 13.5px;">Secret Keyphrase / Case Access Code <span style="color: #992828;">*</span></span>
-              <button type="button" class="secondary smallBtn" id="generateKeyphraseBtn">Generate Keyphrase</button>
+              <span style="font-weight: 700; color: var(--navy-deep); font-size: 13.5px;" data-i18n="keyphrase_label">Secret Keyphrase / Case Access Code *</span>
+              <button type="button" class="secondary smallBtn" id="generateKeyphraseBtn" data-i18n="gen_keyphrase_btn">Generate Keyphrase</button>
             </div>
             <div class="inputWithAction">
-              <input name="keyphrase" id="reportKeyphraseInput" required placeholder="e.g. amber-falcon-842 or choose a secret phrase of your choice" autocomplete="off" style="font-family: var(--font-mono); font-weight: 600;">
-              <button type="button" class="secondary togglePasswordBtn" data-target="reportKeyphraseInput" title="Toggle visibility">Show</button>
+              <input name="keyphrase" id="reportKeyphraseInput" required placeholder="e.g. amber-falcon-842 or choose a secret phrase of your choice" data-i18n-placeholder="keyphrase_placeholder" autocomplete="off" style="font-family: var(--font-mono); font-weight: 600;">
+              <button type="button" class="secondary togglePasswordBtn" data-target="reportKeyphraseInput" data-i18n="toggle_show" title="Toggle visibility">Show</button>
             </div>
             <span class="muted" style="font-size: 11.5px; display: block; margin-top: 4px;">
-              Save this phrase. You will use it with your Reference Code to track this report, amend statements, and communicate with investigating officials.
+              <span data-i18n="keyphrase_help">Save this phrase. You will use it with your Reference Code to track this report, amend statements, and communicate with investigating officials.</span>
             </span>
           </label>
 
           <!-- Scene Photograph Upload -->
           <div class="full">
             <label>
-              <span>Scene Photograph / Visual Evidence (Optional)</span>
+              <span data-i18n="photo_label">Scene Photograph / Visual Evidence (Optional)</span>
               <div id="photoDropZone" class="photoDropZone">
                 <input type="file" id="reportPhotoInput" accept="image/*" style="display: none;">
                 <div id="photoPrompt">
-                  <strong style="color: var(--navy-deep); display: block; font-size: 0.95rem;">Click or Drag to Attach Scene Photograph</strong>
-                  <p class="muted" style="margin: 4px 0 0; font-size: 12px;">Supports JPG, PNG, WEBP (Max 5MB). Computes SHA-256 cryptographic checksum for chain of custody.</p>
+                  <strong style="color: var(--navy-deep); display: block; font-size: 0.95rem;" data-i18n="photo_prompt_title">Click or Drag to Attach Scene Photograph</strong>
+                  <p class="muted" style="margin: 4px 0 0; font-size: 12px;" data-i18n="photo_prompt_sub">Supports JPG, PNG, WEBP (Max 5MB). Computes SHA-256 cryptographic checksum for chain of custody.</p>
                 </div>
                 <div id="photoPreviewContainer" class="hidden" style="margin-top: 10px;">
                   <img id="photoPreviewImg" src="" alt="Scene Preview" style="max-height: 150px; border-radius: 6px; border: 1px solid var(--sand-border);">
@@ -370,19 +397,39 @@
 
           <!-- Public Glimpse / Overview -->
           <label class="full">
-            <span>Public Incident Glimpse (Visible in Directory &amp; to Witnesses) <span style="color: #992828;">*</span></span>
-            <textarea name="incidentOverview" id="reportOverviewInput" rows="2" maxlength="1000" placeholder="Provide a high-level overview so community members and potential witnesses recognize the incident (e.g. Reported store safe burglary near Main Square during morning hours). Do NOT include confidential clues or hidden details." required></textarea>
-            <span class="muted" style="font-size: 11.5px;">This public overview lets witnesses corroborate without copying sensitive specifics.</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span data-i18n="glimpse_label">Public Incident Glimpse (Visible in Directory &amp; to Witnesses) *</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" class="speechDictateBtn secondary smallBtn" data-target="reportOverviewInput" onclick="openDictationModal('reportOverviewInput')" title="Open Voice Dictation Studio" aria-label="Dictate Public Glimpse">
+                  <span class="micIcon">🎤</span> <span class="dictateText" data-i18n="voice_dictate">Voice Dictate</span>
+                </button>
+                <button type="button" class="winHDirectBtn" onclick="focusAndGuideWinH('reportOverviewInput')" title="Press Win + H on your keyboard to speak directly into this field">
+                  ⌨️ Win + H
+                </button>
+              </div>
+            </div>
+            <textarea name="incidentOverview" id="reportOverviewInput" rows="2" maxlength="1000" placeholder="Provide a high-level overview so community members and potential witnesses recognize the incident (e.g. Reported store safe burglary near Main Square during morning hours). Do NOT include confidential clues or hidden details." data-i18n-placeholder="glimpse_placeholder" required></textarea>
+            <span class="muted" style="font-size: 11.5px;" data-i18n="glimpse_help">This public overview lets witnesses corroborate without copying sensitive specifics.</span>
           </label>
 
           <!-- Confidential Detailed Narrative -->
           <label class="full">
-            <span>Confidential Investigation Narrative (Zero-Knowledge WebCrypto E2EE) <span style="color: #992828;">*</span></span>
-            <textarea name="description" rows="4" maxlength="5000" placeholder="Describe exact sequences of events, specific vehicle makes, suspect clothing, directions of travel, items taken, and confidential forensic specifics." required></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span data-i18n="narrative_label">Confidential Investigation Narrative (Zero-Knowledge WebCrypto E2EE) *</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <button type="button" class="speechDictateBtn secondary smallBtn" data-target="reportDescriptionInput" onclick="openDictationModal('reportDescriptionInput')" title="Open Voice Dictation Studio" aria-label="Dictate Confidential Narrative">
+                  <span class="micIcon">🎤</span> <span class="dictateText" data-i18n="voice_dictate">Voice Dictate</span>
+                </button>
+                <button type="button" class="winHDirectBtn" onclick="focusAndGuideWinH('reportDescriptionInput')" title="Press Win + H on your keyboard to speak directly into this field">
+                  ⌨️ Win + H
+                </button>
+              </div>
+            </div>
+            <textarea name="description" id="reportDescriptionInput" rows="4" maxlength="5000" placeholder="Describe exact sequences of events, specific vehicle makes, suspect clothing, directions of travel, items taken, and confidential forensic specifics." data-i18n-placeholder="narrative_placeholder" required></textarea>
             <div class="privacyShield">
               <div>
-                <strong>Independent Witness Anti-Cheating Protection:</strong><br>
-                This detailed narrative is <em>encrypted client-side with AES-GCM-256 before transport</em>. The backend acts as a blind carrier and cannot read it. Decrypted only with your Secret Keyphrase. This prevents prospective witnesses from copying answers to falsely inflate consistency scores.
+                <strong data-i18n="anti_cheat_title">Independent Witness Anti-Cheating Protection:</strong><br>
+                <span data-i18n="anti_cheat_desc">This detailed narrative is encrypted client-side with AES-GCM-256 before transport. The backend acts as a blind carrier and cannot read it. Decrypted only with your Secret Keyphrase. This prevents prospective witnesses from copying answers to falsely inflate consistency scores.</span>
               </div>
             </div>
           </label>
@@ -436,8 +483,37 @@
             <strong>Citizen Intake:</strong> As an anonymous reporter, investigating officers and scene personnel will be assigned upon review by police and administrative officials.
           </div>
 
-          <div class="full" style="display:flex; justify-content:flex-end;">
-            <button class="primary submitBtn" type="submit" style="min-width: 220px;">Submit Incident &amp; Get Keyphrase</button>
+          <!-- Incognito Lodgement / Local Storage Privacy -->
+          <label class="full" style="flex-direction: row; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(0,0,0,0.15); border: 1px solid var(--sand-border); border-radius: var(--radius-sm); margin: 6px 0;">
+            <input type="checkbox" id="incognitoLodgeCheck" name="incognitoLodge" value="true">
+            <div>
+              <strong style="color: var(--sand-gold); font-size: 12.5px;" data-i18n="incognito_title">Incognito Lodgement / Zero Local Traces</strong>
+              <div class="muted" style="font-size: 11px;" data-i18n="incognito_sub">Do NOT save this report code or keyphrase in this browser's local storage (Recommended on public, shared, or monitored computers).</div>
+            </div>
+          </label>
+
+          <!-- Privacy-Preserving Zero-Knowledge CAPTCHA -->
+          <div class="captchaContainer full" id="reportCaptchaBox">
+            <div class="captchaHeader">
+              <span class="captchaBadge" data-i18n="captcha_badge">🤖 HUMAN VERIFICATION</span>
+              <span class="muted" style="font-size: 11px;" data-i18n="captcha_sub">Offline Canvas Verification · Zero 3rd-Party Tracking · No IP Leaks</span>
+            </div>
+            <div class="captchaBody">
+              <canvas id="captchaCanvas" width="160" height="44" class="captchaCanvas" aria-label="Captcha security challenge image"></canvas>
+              <div class="captchaBtnGroup">
+                <button type="button" id="refreshCaptchaBtn" class="secondary smallBtn" title="Generate a new captcha challenge" data-i18n="captcha_refresh">🔄 Refresh</button>
+                <button type="button" id="speakCaptchaBtn" class="secondary smallBtn" title="Speak captcha characters aloud for visually impaired" data-i18n="captcha_speak">🔊 Speak</button>
+              </div>
+              <input type="text" id="reportCaptchaInput" name="captchaInput" maxlength="6" placeholder="ENTER CODE" data-i18n-placeholder="captcha_placeholder" autocomplete="off" required style="max-width: 140px; font-family: var(--font-mono); font-weight: 700; text-transform: uppercase; font-size: 15px; letter-spacing: 2px;">
+            </div>
+            <span id="captchaFeedback" class="muted" style="font-size: 11px; margin-top: 4px; display: block;" data-i18n="captcha_feedback">Enter the 5 characters shown above to verify human submission.</span>
+          </div>
+
+          <div class="full" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:10px;">
+            <div class="muted" style="font-size:11.5px;">
+              <span class="terminalBlink">●</span> <span data-i18n="ip_scrub_notice">Network IP scrubbing active. No personal telemetry collected.</span>
+            </div>
+            <button class="primary submitBtn" type="submit" id="submitReportBtn" style="min-width: 220px;" data-i18n="submit_btn">Submit Incident &amp; Get Keyphrase</button>
           </div>
         </form>
         <p id="reportMessage" class="message" role="status" style="margin-top: 14px; font-weight: 600;"></p>
@@ -451,8 +527,8 @@
       <section class="panel">
         <div class="panelHeader">
           <div class="panelTitleGroup">
-            <span class="slideNumberBadge">Case Tracker</span>
-            <h2>Track &amp; Access Case with Secret Keyphrase</h2>
+            <span class="slideNumberBadge" data-i18n="track_badge">Case Tracker</span>
+            <h2 data-i18n="track_title">Track &amp; Access Case with Secret Keyphrase</h2>
             <p class="muted">Check updates, read inquiries from investigating authorities, and submit supplementary statements without compromising your anonymity.</p>
           </div>
         </div>
@@ -460,17 +536,17 @@
         <div style="max-width: 580px; margin: 0 auto; padding: 20px 0;">
           <form id="trackViewForm" class="form">
             <label>
-              <span>Case Reference Code</span>
-              <input id="trackViewRefCode" required placeholder="e.g. RPT-2026-00001" style="font-family: var(--font-mono); font-size: 15px; text-transform: uppercase;">
+              <span data-i18n="ref_code_label">Case Reference Code</span>
+              <input id="trackViewRefCode" required placeholder="e.g. RPT-2026-00001" data-i18n-placeholder="ref_code_placeholder" style="font-family: var(--font-mono); font-size: 15px; text-transform: uppercase;">
             </label>
             <label style="margin-top: 14px;">
-              <span>Secret Keyphrase / Access Code</span>
+              <span data-i18n="track_keyphrase_label">Secret Keyphrase / Access Code</span>
               <div class="inputWithAction">
-                <input id="trackViewKeyphrase" type="password" required placeholder="Enter the secret keyphrase used when lodging the case" style="font-family: var(--font-mono);">
+                <input id="trackViewKeyphrase" type="password" required placeholder="Enter the secret keyphrase used when lodging the case" data-i18n-placeholder="track_keyphrase_placeholder" style="font-family: var(--font-mono);">
                 <button type="button" class="secondary togglePasswordBtn" data-target="trackViewKeyphrase">Show</button>
               </div>
             </label>
-            <button type="submit" class="primary submitBtn" style="margin-top: 18px; width: 100%;">Unlock Case &amp; Inquiries</button>
+            <button type="submit" class="primary submitBtn" style="margin-top: 18px; width: 100%;" data-i18n="track_submit_btn">Unlock Case &amp; Inquiries</button>
             <p id="trackViewMsg" class="message" role="status" style="margin-top: 12px; font-weight: 600; text-align: center;"></p>
           </form>
 
@@ -493,33 +569,40 @@
       <section class="panel">
         <div class="panelHeader">
           <div class="panelTitleGroup">
-            <span class="slideNumberBadge">Public Directory</span>
-            <h2>Incident Case Directory</h2>
-            <p class="muted">Live cases, public glimpses, witness consistency verification, evidence hashes, and community authenticity indications.</p>
+            <span class="slideNumberBadge" data-i18n="dir_badge">Public Directory</span>
+            <h2 data-i18n="dir_title">Incident Case Directory</h2>
+            <p class="muted" data-i18n="dir_sub">Live cases, public glimpses, witness consistency verification, evidence hashes, and community authenticity indications.</p>
           </div>
           <div class="filterToolbar inputWithAction">
             <select id="statusFilter" aria-label="Filter by status" class="filterSelect" style="min-width: 140px;">
-              <option value="">STATUS: ALL</option>
-              <option value="PENDING">PENDING</option>
-              <option value="UNDER_REVIEW">UNDER REVIEW</option>
-              <option value="INVESTIGATING">INVESTIGATING</option>
-              <option value="RESOLVED">RESOLVED</option>
-              <option value="CLOSED">CLOSED</option>
+              <option value="" data-i18n="status_all">STATUS: ALL</option>
+              <option value="PENDING" data-i18n="status_pending">PENDING</option>
+              <option value="UNDER_REVIEW" data-i18n="status_under_review">UNDER REVIEW</option>
+              <option value="INVESTIGATING" data-i18n="status_investigating">INVESTIGATING</option>
+              <option value="RESOLVED" data-i18n="status_resolved">RESOLVED</option>
+              <option value="CLOSED" data-i18n="status_closed">CLOSED</option>
             </select>
-            <select id="threatFilter" aria-label="Filter by Threat Level" class="filterSelect" style="min-width: 140px;">
-              <option value="">THREAT: ALL</option>
-              <option value="LOW">LOW THREAT</option>
-              <option value="MEDIUM">MEDIUM THREAT</option>
-              <option value="HIGH">HIGH THREAT</option>
-              <option value="CRITICAL">CRITICAL THREAT</option>
-            </select>
-            <select id="importanceFilter" aria-label="Filter by Importance" class="filterSelect" style="min-width: 150px;">
-              <option value="">IMPORTANCE: ALL</option>
-              <option value="ROUTINE">ROUTINE</option>
-              <option value="URGENT">URGENT</option>
-              <option value="PRIORITY">PRIORITY</option>
-              <option value="HIGH_PRIORITY">HIGH PRIORITY</option>
-            </select>
+            <!-- Official-Only Triage Filters (Hidden from public to avoid alarming citizens) -->
+            <span id="officialTriageFilters" style="display: none; align-items: center; gap: 8px;">
+              <select id="threatFilter" aria-label="Filter by Threat Level" class="filterSelect" style="min-width: 140px;">
+                <option value="">THREAT: ALL</option>
+                <option value="LOW">LOW THREAT</option>
+                <option value="MEDIUM">MEDIUM THREAT</option>
+                <option value="HIGH">HIGH THREAT</option>
+                <option value="CRITICAL">CRITICAL THREAT</option>
+              </select>
+              <select id="importanceFilter" aria-label="Filter by Importance" class="filterSelect" style="min-width: 150px;">
+                <option value="">IMPORTANCE: ALL</option>
+                <option value="ROUTINE">ROUTINE</option>
+                <option value="URGENT">URGENT</option>
+                <option value="PRIORITY">PRIORITY</option>
+                <option value="HIGH_PRIORITY">HIGH PRIORITY</option>
+              </select>
+            </span>
+            <label class="clusterToggleLabel" title="Group multiple reports of the same incident together into unified clusters to eliminate redundancy">
+              <input type="checkbox" id="groupClustersToggle">
+              <span>🔗 Group Incident Clusters</span>
+            </label>
             <button id="refreshBtn" class="secondary refreshBtn">&orarr; Refresh</button>
           </div>
         </div>
@@ -537,21 +620,21 @@
       <section class="panel">
         <div class="panelHeader">
           <div class="panelTitleGroup">
-            <span class="slideNumberBadge">Witness Matching</span>
-            <h2>Incident Discovery &amp; Witness Matching</h2>
-            <p class="muted">Search cases by reference number, keywords, or GPS proximity. Witnesses view the public glimpse and independently submit observations.</p>
+            <span class="slideNumberBadge" data-i18n="witness_badge">Witness Matching</span>
+            <h2 data-i18n="witness_title">Incident Discovery &amp; Witness Matching</h2>
+            <p class="muted" data-i18n="witness_sub">Search cases by reference number, keywords, or GPS proximity. Witnesses view the public glimpse and independently submit observations.</p>
           </div>
         </div>
 
         <div class="inputWithAction" style="margin-bottom: 16px;">
-          <input id="contributeSearchInput" placeholder="Search by Case Ref (e.g. RPT-2026-00001), keywords, location, or area..." style="flex:1;">
-          <button id="contributeSearchBtn" class="primary">Search</button>
-          <button id="findNearbyBtn" class="gold">Find Incidents Near Me</button>
+          <input id="contributeSearchInput" placeholder="Search by Case Ref (e.g. RPT-2026-00001), keywords, location, or area..." data-i18n-placeholder="search_placeholder" style="flex:1;">
+          <button id="contributeSearchBtn" class="primary" data-i18n="search_btn">Search</button>
+          <button id="findNearbyBtn" class="gold" data-i18n="find_nearby_btn">Find Incidents Near Me</button>
         </div>
 
         <div id="nearbyStatusNotice" class="searchNotice" style="font-size: 13px; font-weight: 600; color: var(--navy-deep); margin-bottom: 12px;"></div>
         <div id="contributeReportsList" class="reportsList">
-          <p class="muted">Enter keywords above or click 'Find Incidents Near Me' to browse nearby cases.</p>
+          <p class="muted" data-i18n="witness_empty_msg">Enter keywords above or click 'Find Incidents Near Me' to browse nearby cases.</p>
         </div>
       </section>
     </div>
@@ -762,7 +845,7 @@
 
       <form id="trackCaseForm" class="form" style="margin-top: 14px;">
         <label>
-          <span>Case Reference Code</span>
+          <span data-i18n="ref_code_label">Case Reference Code</span>
           <input name="referenceCode" id="trackRefCodeInput" required placeholder="e.g. RPT-2026-00001" style="font-family: var(--font-mono); text-transform: uppercase;">
         </label>
         <label style="margin-top: 12px;">
@@ -1336,6 +1419,138 @@
 <!-- ==========================================
      FIRST-TIME VISITOR ONBOARDING MODAL & INTERACTIVE WALKTHROUGH
      ========================================== -->
+<!-- ==========================================
+     INTERACTIVE VOICE DICTATION STUDIO MODAL
+     ========================================== -->
+<div id="dictationModal" class="modal hidden">
+  <div class="modalContent dictationCard">
+    <div class="dictationHeader">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span class="dictationPulseMic" id="dictationPulseMic">🎙️</span>
+        <div>
+          <h3 style="margin: 0; font-size: 1.15rem; color: var(--sand-gold);" id="dictationModalTitle">Voice Dictation Studio</h3>
+          <span class="muted" style="font-size: 12px;" id="dictationStatusText">Ready. Choose your speaking language and click Start Listening.</span>
+        </div>
+      </div>
+      <button type="button" class="dictationCloseBtn" onclick="closeDictationModal()" title="Close">&times;</button>
+    </div>
+
+    <!-- Dictation Studio Tabs: Speech to Text vs Voice Audio Recording vs Windows Win+H -->
+    <div class="dictationStudioTabs">
+      <button type="button" class="dictStudioTabBtn active" id="tabSpeechToText" onclick="switchStudioTab('stt')">🎤 Speech-to-Text</button>
+      <button type="button" class="dictStudioTabBtn" id="tabVoiceAudio" onclick="switchStudioTab('audio')">⏺️ Record Voice Clip</button>
+      <button type="button" class="dictStudioTabBtn" id="tabWinHGuide" onclick="switchStudioTab('winh')">⌨️ Windows Voice (Win + H)</button>
+    </div>
+
+    <!-- TAB 1: Speech-to-Text -->
+    <div id="studioPaneSTT" class="studioTabPane">
+      <!-- Dictation Language Selector -->
+      <div class="dictationLangBar">
+        <span class="muted" style="font-size: 11.5px; font-weight: 600;">Recognition Language:</span>
+        <div class="dictationLangPills">
+          <button type="button" class="dictLangBtn active" id="dictLangEn" onclick="switchDictationLanguage('en')">🇬🇧 English (India)</button>
+          <button type="button" class="dictLangBtn" id="dictLangHi" onclick="switchDictationLanguage('hi')">🇮🇳 हिन्दी (Hindi)</button>
+          <button type="button" class="dictLangBtn" id="dictLangTe" onclick="switchDictationLanguage('te')">🇮🇳 తెలుగు (Telugu)</button>
+        </div>
+      </div>
+
+      <!-- Live Animated Sound Waveform Indicator -->
+      <div class="dictationWaveContainer" id="dictationWaveContainer">
+        <div class="dictationWaveBar b1"></div>
+        <div class="dictationWaveBar b2"></div>
+        <div class="dictationWaveBar b3"></div>
+        <div class="dictationWaveBar b4"></div>
+        <div class="dictationWaveBar b5"></div>
+        <div class="dictationWaveBar b6"></div>
+        <div class="dictationWaveBar b7"></div>
+        <div class="dictationWaveBar b8"></div>
+        <div class="dictationWaveBar b9"></div>
+        <div class="dictationWaveBar b10"></div>
+      </div>
+
+      <!-- Live Transcription Textarea -->
+      <div class="dictationPreviewBox">
+        <textarea id="dictationLiveText" rows="4" placeholder="Speak into your microphone... Spoken words will appear here in real time. You can edit this text anytime."></textarea>
+      </div>
+
+      <!-- Text Editing Tools -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 6px 0 10px;">
+        <span class="muted" style="font-size: 11px;" id="dictCharCount">0 characters</span>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="templatePillBtn" onclick="clearDictationText()" style="padding: 2px 8px; font-size: 11px;">🧹 Clear</button>
+          <button type="button" class="templatePillBtn" onclick="copyDictationText()" style="padding: 2px 8px; font-size: 11px;">📋 Copy</button>
+        </div>
+      </div>
+
+      <!-- Quick Statement Templates -->
+      <div class="quickTemplatesRow">
+        <div class="muted" style="font-size: 11px; font-weight: 700; margin-bottom: 6px; letter-spacing: 0.5px;">1-CLICK INCIDENT SCENARIO TEMPLATES:</div>
+        <div class="templateButtons" id="dictationTemplateButtons">
+          <!-- Dynamically populated in selected language -->
+        </div>
+      </div>
+
+      <div class="dictationActions">
+        <button type="button" class="secondary" id="dictationToggleBtn" onclick="toggleDictationSession()">▶️ Start Listening</button>
+        <button type="button" class="primary" id="dictationApplyBtn" onclick="applyDictationText()">✅ Apply Statement to Form</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: Voice Audio Note Recording -->
+    <div id="studioPaneAudio" class="studioTabPane hidden">
+      <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 16px; text-align: center; margin-bottom: 14px;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🎙️</div>
+        <h4 style="margin: 0 0 6px; color: var(--sand-gold);">Direct Voice Audio Statement</h4>
+        <p class="muted" style="font-size: 12px; margin: 0 0 14px;">Record your spoken statement as audio evidence. Even without speech recognition servers, your actual voice statement is preserved.</p>
+        
+        <div id="recordStatusBadge" style="font-size: 13px; font-weight: 600; margin-bottom: 12px;">Ready to record voice audio.</div>
+        <div style="font-size: 24px; font-family: var(--font-mono, monospace); color: var(--sand-gold); margin-bottom: 14px;" id="recordTimerDisplay">00:00</div>
+
+        <div style="display: flex; justify-content: center; gap: 10px;">
+          <button type="button" class="primary" id="recordAudioStartBtn" onclick="startVoiceNoteRecording()">🔴 Start Recording</button>
+          <button type="button" class="secondary hidden" id="recordAudioStopBtn" onclick="stopVoiceNoteRecording()" style="border-color: #f87171; color: #f87171;">⏹️ Stop Recording</button>
+        </div>
+
+        <audio id="dictationAudioPlayer" controls class="hidden" style="width: 100%; margin-top: 14px;"></audio>
+      </div>
+
+      <div id="voiceNoteActionsRow" class="hidden" style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="primary" onclick="attachRecordedAudioToForm()">📎 Attach Audio Statement to Case</button>
+      </div>
+    </div>
+
+    <!-- TAB 3: Windows Voice Typing Guide (Win + H) -->
+    <div id="studioPaneWinH" class="studioTabPane hidden">
+      <div style="background: rgba(194, 162, 104, 0.08); border: 1px dashed rgba(194, 162, 104, 0.35); border-radius: 8px; padding: 18px; margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <span style="font-size: 32px;">⌨️</span>
+          <div>
+            <h4 style="margin: 0; color: var(--sand-gold);">Windows 10 / 11 Native Voice Typing</h4>
+            <span class="muted" style="font-size: 12px;">100% Offline · Zero Latency · Works in any browser</span>
+          </div>
+        </div>
+        <p style="font-size: 13px; line-height: 1.6; color: #cbd5e1; margin-bottom: 12px;">
+          Windows has a built-in speech recognition system that requires zero browser permissions and zero cloud servers.
+        </p>
+        <div style="background: #090e11; border-radius: 6px; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; margin-bottom: 14px;">
+          <span>Press</span>
+          <kbd class="retroFont" style="background: #141c21; padding: 4px 10px; border: 1px solid #3a4a52; border-radius: 4px; color: var(--sand-gold); font-size: 15px; font-weight: bold;">⊞ Win</kbd>
+          <span>+</span>
+          <kbd class="retroFont" style="background: #141c21; padding: 4px 10px; border: 1px solid #3a4a52; border-radius: 4px; color: var(--sand-gold); font-size: 15px; font-weight: bold;">H</kbd>
+          <span>on your keyboard!</span>
+        </div>
+        <p class="muted" style="font-size: 12px; line-height: 1.5; margin: 0;">
+          A small Windows dictation toolbar will open at the top of your screen. Simply talk, and Windows will type your exact words directly into any focused field!
+        </p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="primary" onclick="focusFieldAndPromptWinH()">🚀 Focus Target Field &amp; Dictate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="firstTimePromptModal" class="modal hidden">
   <div class="modalContent tourWelcomeCard">
     <div class="tourWelcomeHeader">
@@ -1343,12 +1558,12 @@
       <span class="slideNumberBadge retroFont">ORIENTATION GUIDE</span>
       <h3 style="font-size: 1.55rem; margin: 10px 0 6px; color: var(--text-primary);">Is this your first time here?</h3>
       <p class="muted" style="font-size: 12.5px; line-height: 1.6;">
-        Welcome to the <strong>Digital Reporting System</strong>. Would you like a detailed 8-step interactive guided tour explaining anonymous case lodgement, directory filters, risk threat badges, evidence verification, and zero-knowledge encryption?
+        Welcome to the <strong>Digital Reporting System</strong>. Would you like a detailed 13-step interactive guided tour explaining anonymous case lodgement, public directory inspection, encrypted narratives, evidence verification, and zero-knowledge privacy?
       </p>
     </div>
     <div class="tourChoiceButtons">
       <button type="button" class="primary" id="startTourBtn" onclick="startWalkthrough()">Yes, Start Guided Tour &rarr;</button>
-      <button type="button" class="secondary" id="declineTourBtn" onclick="closeWalkthrough()">No, I'm experienced</button>
+      <button type="button" class="secondary" id="declineTourBtn" onclick="closeWalkthrough(event)">No, I'm experienced</button>
     </div>
   </div>
 </div>
@@ -1357,20 +1572,20 @@
   <div class="walkthroughSpotlight" id="walkthroughSpotlight"></div>
   <div class="walkthroughTooltip" id="walkthroughTooltip">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-      <span class="walkthroughStepBadge" id="walkthroughStepBadge">STEP 1 OF 8</span>
-      <button type="button" class="walkthroughCloseIcon" onclick="closeWalkthrough()" title="Close Tour">&times;</button>
+      <span class="walkthroughStepBadge" id="walkthroughStepBadge">STEP 1 OF 13</span>
+      <button type="button" class="walkthroughCloseIcon" onclick="closeWalkthrough(event)" title="Close Tour">&times;</button>
     </div>
     <h4 class="walkthroughTitle" id="walkthroughTitle">Anonymous Lodgement</h4>
     <p class="walkthroughDesc" id="walkthroughDesc">Explanation text...</p>
     <div class="walkthroughControls">
-      <button type="button" class="secondary smallBtn" id="wtPrevBtn" onclick="walkthroughPrev()">&larr; Back</button>
-      <button type="button" class="secondary smallBtn" id="wtSkipBtn" onclick="closeWalkthrough()">Skip Tour</button>
-      <button type="button" class="primary smallBtn" id="wtNextBtn" onclick="walkthroughNext()">Next &rarr;</button>
+      <button type="button" class="secondary smallBtn" id="wtPrevBtn" onclick="walkthroughPrev(event)">&larr; Back</button>
+      <button type="button" class="secondary smallBtn" id="wtSkipBtn" onclick="closeWalkthrough(event)">Skip Tour</button>
+      <button type="button" class="primary smallBtn" id="wtNextBtn" onclick="walkthroughNext(event)">Next &rarr;</button>
     </div>
   </div>
 </div>
 
-<script src="/app.js?v=3.3"></script>
+<script src="/app.js?v=5.0"></script>
 
 </body>
 </html>
