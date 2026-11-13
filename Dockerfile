@@ -1,15 +1,24 @@
-# Use an official, lightweight Java 21 runtime
-FROM eclipse-temurin:21-jre-alpine
-
-# Set the working directory inside the container
+# Stage 1: Build the JAR from source using Maven with Eclipse Temurin JDK 21
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
 WORKDIR /app
 
-# Copy the compiled JAR file from your target folder into the container
-# (Change the .jar name to match whatever was generated in Step 1.1)
-COPY target/drs-0.0.1-SNAPSHOT.jar app.jar
+# Copy pom.xml and source files
+COPY pom.xml .
+COPY src ./src
 
-# Expose port 8081 as specified in your architecture
+# Build the executable jar (skipping unit tests for fast deployment)
+RUN mvn clean package -DskipTests
+
+# Stage 2: Lightweight official Java 21 JRE runtime
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Copy the compiled JAR file from the builder stage
+COPY --from=builder /app/target/*.jar app.jar
+
+# Support dynamic cloud port (Render sets $PORT, defaults to 8081 locally)
+ENV PORT=8081
 EXPOSE 8081
 
 # Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:+UseContainerSupport -Dserver.port=${PORT} -jar app.jar"]
