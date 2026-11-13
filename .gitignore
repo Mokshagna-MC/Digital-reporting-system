@@ -31,3 +31,8 @@ hs_err_pid*
 replay_pid*
 *.bak
 
+# Environment & Secrets
+.env
+.env.*
+
+
