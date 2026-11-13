@@ -286,7 +286,7 @@ function lockFutureDates() {
 // API BASE URL CONFIGURATION (Localhost vs Render Cloud)
 // ==========================================
 // Set this to your live Render backend URL when deployed on Vercel:
-const DEFAULT_RENDER_BACKEND_URL = "https://drs-api.onrender.com";
+const DEFAULT_RENDER_BACKEND_URL = "https://digital-reporting-system-8xtk.onrender.com";
 
 const API_BASE = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
   ? "" 
