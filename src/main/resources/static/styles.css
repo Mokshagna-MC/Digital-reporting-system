@@ -2749,12 +2749,83 @@ html.tourActive, body.tourActive {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .walkthroughControls button {
   cursor: pointer;
   pointer-events: auto !important;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+/* Explicit high-contrast buttons on the dark tooltip background */
+#wtPrevBtn {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border: 1px solid rgba(194, 162, 104, 0.6) !important;
+  color: #FFFFFF !important;
+}
+
+#wtPrevBtn:hover:not(:disabled) {
+  background: rgba(194, 162, 104, 0.3) !important;
+  border-color: var(--sand-gold, #c2a268) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 10px rgba(194, 162, 104, 0.4);
+}
+
+#wtPrevBtn:disabled {
+  opacity: 0.35 !important;
+  cursor: not-allowed !important;
+  color: #94A3B8 !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+#wtSkipBtn {
+  background: rgba(239, 68, 68, 0.16) !important;
+  border: 1px solid rgba(248, 113, 113, 0.55) !important;
+  color: #FECDD3 !important;
+  font-weight: 600 !important;
+}
+
+#wtSkipBtn:hover {
+  background: rgba(239, 68, 68, 0.35) !important;
+  border-color: #F87171 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+#wtNextBtn {
+  background: var(--sand-gold, #c2a268) !important;
+  border: 1px solid var(--sand-gold, #c2a268) !important;
+  color: #0A1316 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 12px rgba(194, 162, 104, 0.35);
+}
+
+#wtNextBtn:hover {
+  background: #d4b87f !important;
+  box-shadow: 0 0 18px rgba(194, 162, 104, 0.6);
+}
+
+/* Also ensure Welcome modal's "No, I'm experienced" is crisp and visible */
+.tourChoiceButtons #declineTourBtn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+.tourChoiceButtons #declineTourBtn:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border-color: var(--sand-gold, #c2a268) !important;
+  color: var(--sand-gold, #c2a268) !important;
 }
 
 

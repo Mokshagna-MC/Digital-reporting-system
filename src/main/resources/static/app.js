@@ -4303,13 +4303,29 @@ function renderTourStep() {
     const desc = $("#walkthroughDesc");
     const prevBtn = $("#wtPrevBtn");
     const nextBtn = $("#wtNextBtn");
+    const skipBtn = $("#wtSkipBtn");
 
     if (badge) badge.textContent = `STEP ${currentTourStep + 1} OF ${TOUR_STEPS.length}`;
     if (title) title.textContent = step.title;
     if (desc) desc.textContent = step.desc;
 
-    if (prevBtn) prevBtn.disabled = currentTourStep === 0;
-    if (nextBtn) nextBtn.textContent = currentTourStep === TOUR_STEPS.length - 1 ? "Finish Tour ✓" : "Next →";
+    const curTourLang = localStorage.getItem("drs_site_lang") || "en";
+    const isLastTourStep = currentTourStep === TOUR_STEPS.length - 1;
+
+    if (prevBtn) {
+      prevBtn.disabled = currentTourStep === 0;
+      prevBtn.textContent = curTourLang === "hi" ? "← पीछे" : curTourLang === "te" ? "← వెనుకకు" : "← Back";
+    }
+    if (skipBtn) {
+      skipBtn.textContent = curTourLang === "hi" ? "टूर छोड़ें" : curTourLang === "te" ? "పర్యటన దాటవేయి" : "Skip Tour";
+    }
+    if (nextBtn) {
+      if (isLastTourStep) {
+        nextBtn.textContent = curTourLang === "hi" ? "टूर समाप्त करें ✓" : curTourLang === "te" ? "పర్యటన ముగించు ✓" : "Finish Tour ✓";
+      } else {
+        nextBtn.textContent = curTourLang === "hi" ? "आगे →" : curTourLang === "te" ? "తరువాత →" : "Next →";
+      }
+    }
 
     if (el) {
       const rect = el.getBoundingClientRect();
