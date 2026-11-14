@@ -48,6 +48,7 @@ public class ReportController {
     private final ReportMessageRepository reportMessageRepository;
     private final PasswordEncoder passwordEncoder;
     private final AsyncIncidentProcessor asyncProcessor;
+    private final com.example.backend.service.AuthService authService;
 
     public ReportController(ReportRepository reports,
                             UserRepository users,
@@ -60,7 +61,8 @@ public class ReportController {
                             ReportEndorsementRepository endorsementRepository,
                             ReportMessageRepository reportMessageRepository,
                             PasswordEncoder passwordEncoder,
-                            AsyncIncidentProcessor asyncProcessor) {
+                            AsyncIncidentProcessor asyncProcessor,
+                            com.example.backend.service.AuthService authService) {
         this.reports = reports;
         this.users = users;
         this.auditLogService = auditLogService;
@@ -73,6 +75,7 @@ public class ReportController {
         this.reportMessageRepository = reportMessageRepository;
         this.passwordEncoder = passwordEncoder;
         this.asyncProcessor = asyncProcessor;
+        this.authService = authService;
     }
 
     private static final String POW_SECRET = "DRS_POW_SECRET_SALT_2026";
@@ -920,11 +923,11 @@ public class ReportController {
     }
 
     private boolean isReporterSessionOwner(Report r, HttpSession session) {
-        if (r == null || session == null) return false;
-        Object accId = session.getAttribute("accessibleReportId");
-        if (accId instanceof Long aid && aid.equals(r.getId())) return true;
-        Object token = session.getAttribute("anonymousSessionToken");
-        if (token instanceof String tok && tok.equals(r.getAnonymousSessionToken())) return true;
+        if (r == null) return false;
+        Long accId = authService.getAccessibleReportId(session);
+        if (accId != null && accId.equals(r.getId())) return true;
+        String token = authService.getAnonymousSessionToken(session);
+        if (token != null && token.equals(r.getAnonymousSessionToken())) return true;
         return false;
     }
 
@@ -947,10 +950,7 @@ public class ReportController {
     }
 
     private User currentUser(HttpSession session) {
-        if (session == null) return null;
-        Object id = session.getAttribute("userId");
-        if (!(id instanceof Long userId)) return null;
-        return users.findById(userId).orElse(null);
+        return authService.getCurrentUser(session);
     }
 
     private boolean isAuthorizedViewer(User user) {

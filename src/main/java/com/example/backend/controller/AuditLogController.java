@@ -20,11 +20,16 @@ public class AuditLogController {
     private final AuditLogService auditLogService;
     private final ReportRepository reports;
     private final UserRepository users;
+    private final com.example.backend.service.AuthService authService;
 
-    public AuditLogController(AuditLogService auditLogService, ReportRepository reports, UserRepository users) {
+    public AuditLogController(AuditLogService auditLogService,
+                              ReportRepository reports,
+                              UserRepository users,
+                              com.example.backend.service.AuthService authService) {
         this.auditLogService = auditLogService;
         this.reports = reports;
         this.users = users;
+        this.authService = authService;
     }
 
     @GetMapping("/audit-logs")
@@ -45,7 +50,7 @@ public class AuditLogController {
 
         boolean isStaffUser = user != null && isStaff(user);
         boolean isOwner = (user != null && report.getReporter() != null && report.getReporter().getId().equals(user.getId()))
-                || Objects.equals(session.getAttribute("accessibleReportId"), id);
+                || Objects.equals(authService.getAccessibleReportId(session), id);
 
         if (!isStaffUser && !isOwner) {
             return ResponseEntity.status(403).body(Map.of("message", "Access restricted to authorized personnel or the verified case owner."));
@@ -54,9 +59,7 @@ public class AuditLogController {
     }
 
     private User currentUser(HttpSession session) {
-        Object id = session.getAttribute("userId");
-        if (!(id instanceof Long userId)) return null;
-        return users.findById(userId).orElse(null);
+        return authService.getCurrentUser(session);
     }
 
     private boolean isStaff(User user) {

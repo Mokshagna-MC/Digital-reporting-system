@@ -17,6 +17,7 @@ public class WebSecurityConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns("http://localhost:[*]", "http://127.0.0.1:[*]", "https://*.onrender.com", "https://*.railway.app", "https://*.vercel.app", "https://*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
+                .exposedHeaders("Authorization", "X-Auth-Token", "X-Accessible-Report-Id", "X-Anonymous-Session-Token", "Set-Cookie")
                 .allowCredentials(true)
                 .maxAge(3600);
     }

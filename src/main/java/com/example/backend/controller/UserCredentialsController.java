@@ -21,15 +21,18 @@ public class UserCredentialsController {
     private final ReportRepository reportRepository;
     private final WitnessRepository witnessRepository;
     private final ReportEndorsementRepository endorsementRepository;
+    private final com.example.backend.service.AuthService authService;
 
     public UserCredentialsController(UserRepository userRepository,
                                      ReportRepository reportRepository,
                                      WitnessRepository witnessRepository,
-                                     ReportEndorsementRepository endorsementRepository) {
+                                     ReportEndorsementRepository endorsementRepository,
+                                     com.example.backend.service.AuthService authService) {
         this.userRepository = userRepository;
         this.reportRepository = reportRepository;
         this.witnessRepository = witnessRepository;
         this.endorsementRepository = endorsementRepository;
+        this.authService = authService;
     }
 
     @GetMapping("/credentials")
@@ -107,8 +110,6 @@ public class UserCredentialsController {
     }
 
     private User currentUser(HttpSession session) {
-        Object id = session.getAttribute("userId");
-        if (!(id instanceof Long userId)) return null;
-        return userRepository.findById(userId).orElse(null);
+        return authService.getCurrentUser(session);
     }
 }

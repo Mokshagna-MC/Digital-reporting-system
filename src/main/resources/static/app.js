@@ -294,9 +294,19 @@ const API_BASE = (window.location.hostname === "localhost" || window.location.ho
 
 async function api(url, options={}) {
   const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
+  const token = localStorage.getItem("drs_auth_token") || (currentUser && currentUser.token);
+  const authHeaders = {};
+  if (token) {
+    authHeaders["Authorization"] = `Bearer ${token}`;
+    authHeaders["X-Auth-Token"] = token;
+  }
   const response = await fetch(fullUrl, {
     credentials: "include",
-    headers: {"Content-Type": "application/json", ...(options.headers || {})},
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+      ...(options.headers || {})
+    },
     ...options
   });
   const data = response.status === 204 ? null : await response.json().catch(()=>null);
@@ -1310,6 +1320,12 @@ function initKeyphraseFeatures() {
         method: "POST",
         body: JSON.stringify({ username, password })
       });
+      if (currentUser) {
+        localStorage.setItem("drs_current_user", JSON.stringify(currentUser));
+        if (currentUser.token) {
+          localStorage.setItem("drs_auth_token", currentUser.token);
+        }
+      }
       $("#authorityLoginModal")?.classList.add("hidden");
       await showApp();
     } catch(err) {
@@ -1331,6 +1347,8 @@ function initKeyphraseFeatures() {
   $("#logoutBtn")?.addEventListener("click", async () => {
     try { await api("/api/auth/logout", {method: "POST", body: "{}"}); } catch(_) {}
     currentUser = null;
+    localStorage.removeItem("drs_current_user");
+    localStorage.removeItem("drs_auth_token");
     await showApp();
   });
 }
@@ -4092,6 +4110,8 @@ This will permanently delete all cached case references, Diceware passphrases, l
 
     localStorage.removeItem("drs_active_case");
     localStorage.removeItem("drs_case_history");
+    localStorage.removeItem("drs_current_user");
+    localStorage.removeItem("drs_auth_token");
     sessionStorage.clear();
     activeSessionCase = null;
     currentUser = null;
@@ -4434,10 +4454,29 @@ window.addEventListener("resize", () => {
   initBurnSessionFeatures();
   await initCaseSession();
 
+  // Restore persisted user session immediately from localStorage for snappy render
   try {
-    currentUser = await api("/api/auth/me");
-  } catch(_) {
-    currentUser = null;
+    const savedUser = localStorage.getItem("drs_current_user");
+    if (savedUser) {
+      currentUser = JSON.parse(savedUser);
+    }
+  } catch(_) {}
+
+  try {
+    const freshUser = await api("/api/auth/me");
+    if (freshUser) {
+      currentUser = { ...(currentUser || {}), ...freshUser };
+      localStorage.setItem("drs_current_user", JSON.stringify(currentUser));
+      if (freshUser.token) {
+        localStorage.setItem("drs_auth_token", freshUser.token);
+      }
+    }
+  } catch(err) {
+    if (err && (err.message?.includes("401") || err.message?.includes("log in"))) {
+      currentUser = null;
+      localStorage.removeItem("drs_current_user");
+      localStorage.removeItem("drs_auth_token");
+    }
   }
 
   await showApp();

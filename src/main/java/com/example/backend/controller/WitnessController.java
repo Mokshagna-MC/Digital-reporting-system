@@ -27,17 +27,20 @@ public class WitnessController {
     private final UserRepository users;
     private final WitnessVerificationService verificationService;
     private final AuditLogService auditLogService;
+    private final com.example.backend.service.AuthService authService;
 
     public WitnessController(WitnessRepository witnessRepository,
                              ReportRepository reports,
                              UserRepository users,
                              WitnessVerificationService verificationService,
-                             AuditLogService auditLogService) {
+                             AuditLogService auditLogService,
+                             com.example.backend.service.AuthService authService) {
         this.witnessRepository = witnessRepository;
         this.reports = reports;
         this.users = users;
         this.verificationService = verificationService;
         this.auditLogService = auditLogService;
+        this.authService = authService;
     }
 
     @PostMapping("/reports/{id}/witnesses")
@@ -136,9 +139,7 @@ public class WitnessController {
     }
 
     private User currentUser(HttpSession session) {
-        Object id = session.getAttribute("userId");
-        if (!(id instanceof Long userId)) return null;
-        return users.findById(userId).orElse(null);
+        return authService.getCurrentUser(session);
     }
 
     private boolean isAuthorizedReviewer(User user) {

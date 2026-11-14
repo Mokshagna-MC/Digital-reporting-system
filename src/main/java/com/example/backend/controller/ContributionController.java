@@ -27,17 +27,20 @@ public class ContributionController {
     private final UserRepository users;
     private final ConfidenceEvaluationService confidenceService;
     private final AuditLogService auditLogService;
+    private final com.example.backend.service.AuthService authService;
 
     public ContributionController(ReportContributionRepository contributionRepository,
                                   ReportRepository reports,
                                   UserRepository users,
                                   ConfidenceEvaluationService confidenceService,
-                                  AuditLogService auditLogService) {
+                                  AuditLogService auditLogService,
+                                  com.example.backend.service.AuthService authService) {
         this.contributionRepository = contributionRepository;
         this.reports = reports;
         this.users = users;
         this.confidenceService = confidenceService;
         this.auditLogService = auditLogService;
+        this.authService = authService;
     }
 
     @PostMapping("/reports/{id}/contributions")
@@ -201,9 +204,7 @@ public class ContributionController {
     }
 
     private User currentUser(HttpSession session) {
-        Object id = session.getAttribute("userId");
-        if (!(id instanceof Long userId)) return null;
-        return users.findById(userId).orElse(null);
+        return authService.getCurrentUser(session);
     }
 
     private boolean isStaff(User user) {

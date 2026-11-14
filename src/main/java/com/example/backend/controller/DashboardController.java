@@ -22,24 +22,25 @@ public class DashboardController {
     private final AuditLogRepository auditLogs;
     private final IncidentOfficialRepository officialRepository;
     private final ReportContributionRepository contributionRepository;
+    private final com.example.backend.service.AuthService authService;
 
     public DashboardController(ReportRepository reports,
                                UserRepository users,
                                AuditLogRepository auditLogs,
                                IncidentOfficialRepository officialRepository,
-                               ReportContributionRepository contributionRepository) {
+                               ReportContributionRepository contributionRepository,
+                               com.example.backend.service.AuthService authService) {
         this.reports = reports;
         this.users = users;
         this.auditLogs = auditLogs;
         this.officialRepository = officialRepository;
         this.contributionRepository = contributionRepository;
+        this.authService = authService;
     }
 
     @GetMapping
-    @Cacheable(value = "dashboardMetrics", key = "'publicDashboard'", condition = "#session.getAttribute('userId') == null")
     public ResponseEntity<?> dashboard(HttpSession session) {
-        Object id = session.getAttribute("userId");
-        User user = (id instanceof Long userId) ? users.findById(userId).orElse(null) : null;
+        User user = authService.getCurrentUser(session);
 
         boolean isStaff = user != null && ("POLICE".equals(user.getRole()) || "ADMIN".equals(user.getRole()));
         

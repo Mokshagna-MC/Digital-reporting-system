@@ -35,58 +35,57 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 1. Seed Users if empty
-        User admin = userRepository.findByUsername("admin").orElse(null);
-        if (admin == null) {
-            admin = new User();
-            admin.setUsername("admin");
-            admin.setEmail("admin@drs.internal");
-            admin.setPasswordHash(passwordEncoder.encode("Admin@123456"));
-            admin.setRole("ADMIN");
-            admin.setEmailVerified(true);
-            admin.setBadgeNumber("DRS-ADMIN-01");
-            admin.setDepartmentOrOrg("Central Operations");
-            admin.setDesignation("System Administrator");
-            admin = userRepository.save(admin);
-        }
+        // 1. Seed or synchronize official & demo users
+        User admin = userRepository.findByUsername("admin").orElse(new User());
+        admin.setUsername("admin");
+        admin.setEmail("admin@drs.internal");
+        admin.setPasswordHash(passwordEncoder.encode("Admin@2026Password!"));
+        admin.setRole("ADMIN");
+        admin.setEmailVerified(true);
+        admin.setBadgeNumber("DRS-ADMIN-01");
+        admin.setDepartmentOrOrg("Central Operations");
+        admin.setDesignation("System Administrator");
+        admin = userRepository.save(admin);
 
-        User police = userRepository.findByUsername("sgt_reynolds").orElse(null);
-        if (police == null) {
-            police = new User();
-            police.setUsername("sgt_reynolds");
-            police.setEmail("sgt.reynolds@police.gov.in");
-            police.setPasswordHash(passwordEncoder.encode("Police@123456"));
-            police.setRole("POLICE");
-            police.setEmailVerified(true);
-            police.setBadgeNumber("DL-IPS-7704");
-            police.setDepartmentOrOrg("Cyber Crime Cell IFSO Dwarka");
-            police.setDesignation("Assistant Commissioner");
-            police = userRepository.save(police);
-        }
+        User police = userRepository.findByUsername("sgt_reynolds").orElse(new User());
+        police.setUsername("sgt_reynolds");
+        police.setEmail("sgt.reynolds@police.gov.in");
+        police.setPasswordHash(passwordEncoder.encode("Secur3Password!"));
+        police.setRole("POLICE");
+        police.setEmailVerified(true);
+        police.setBadgeNumber("DL-IPS-7704");
+        police.setDepartmentOrOrg("Cyber Crime Cell IFSO Dwarka");
+        police.setDesignation("Assistant Commissioner");
+        police = userRepository.save(police);
 
-        User citizen = userRepository.findByUsername("ananya_citizen").orElse(null);
-        if (citizen == null) {
-            citizen = new User();
-            citizen.setUsername("ananya_citizen");
-            citizen.setEmail("ananya.sharma@example.com");
-            citizen.setPasswordHash(passwordEncoder.encode("Citizen@123456"));
-            citizen.setRole("CITIZEN");
-            citizen.setEmailVerified(true);
-            citizen = userRepository.save(citizen);
-        }
+        User official = userRepository.findByUsername("lead_officer_test").orElse(new User());
+        official.setUsername("lead_officer_test");
+        official.setEmail("lead.officer@mha.gov.in");
+        official.setPasswordHash(passwordEncoder.encode("Secur3Password!"));
+        official.setRole("GOVERNMENT_OFFICIAL");
+        official.setEmailVerified(true);
+        official.setBadgeNumber("GOV-IAS-2026");
+        official.setDepartmentOrOrg("Ministry of Home Affairs / Central Review Board");
+        official.setDesignation("Senior Investigation Officer");
+        official = userRepository.save(official);
 
-        User journalist = userRepository.findByUsername("ravi_journalist").orElse(null);
-        if (journalist == null) {
-            journalist = new User();
-            journalist.setUsername("ravi_journalist");
-            journalist.setEmail("ravi@dailychronicle.in");
-            journalist.setPasswordHash(passwordEncoder.encode("Journalist@123456"));
-            journalist.setRole("JOURNALIST");
-            journalist.setEmailVerified(true);
-            journalist.setDepartmentOrOrg("Daily Chronicle");
-            journalist.setDesignation("Senior Investigative Reporter");
-            journalist = userRepository.save(journalist);
-        }
+        User citizen = userRepository.findByUsername("ananya_citizen").orElse(new User());
+        citizen.setUsername("ananya_citizen");
+        citizen.setEmail("ananya.sharma@example.com");
+        citizen.setPasswordHash(passwordEncoder.encode("Citizen@123456"));
+        citizen.setRole("CITIZEN");
+        citizen.setEmailVerified(true);
+        citizen = userRepository.save(citizen);
+
+        User journalist = userRepository.findByUsername("ravi_journalist").orElse(new User());
+        journalist.setUsername("ravi_journalist");
+        journalist.setEmail("ravi@dailychronicle.in");
+        journalist.setPasswordHash(passwordEncoder.encode("Journalist@123456"));
+        journalist.setRole("JOURNALIST");
+        journalist.setEmailVerified(true);
+        journalist.setDepartmentOrOrg("Daily Chronicle");
+        journalist.setDesignation("Senior Investigative Reporter");
+        journalist = userRepository.save(journalist);
 
         // 2. Seed Reports if empty
         if (reportRepository.count() == 0) {
